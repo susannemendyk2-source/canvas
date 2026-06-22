@@ -1,7 +1,0 @@
-com\polaris\common\config\RedisConfig.class
-com\polaris\common\exception\BusinessException.class
-com\polaris\common\exception\GlobalExceptionHandler.class
-com\polaris\common\constant\ApiConstants.class
-com\polaris\common\response\R.class
-com\polaris\common\enums\ResultCode.class
-com\polaris\common\config\OpenApiConfig.class
