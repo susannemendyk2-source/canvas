@@ -1,0 +1,5 @@
+com\polaris\asset\service\AssetService.class
+com\polaris\asset\service\MinioService.class
+com\polaris\asset\controller\AssetController.class
+com\polaris\asset\mapper\AssetMapper.class
+com\polaris\asset\entity\Asset.class

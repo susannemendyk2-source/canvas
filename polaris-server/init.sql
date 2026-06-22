@@ -1,0 +1,192 @@
+CREATE DATABASE IF NOT EXISTS polaris DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE polaris;
+
+CREATE TABLE IF NOT EXISTS user (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100),
+    nickname VARCHAR(50),
+    avatar VARCHAR(500),
+    phone VARCHAR(30),
+    status TINYINT DEFAULT 1,
+    type TINYINT DEFAULT 0,
+    credits INT DEFAULT 0,
+    last_login_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS role (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(200),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS user_role (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    role_id BIGINT NOT NULL,
+    UNIQUE KEY uk_user_role (user_id, role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS permission (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    type VARCHAR(20) DEFAULT 'api',
+    parent_id BIGINT DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS role_permission (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    role_id BIGINT NOT NULL,
+    permission_id BIGINT NOT NULL,
+    UNIQUE KEY uk_role_perm (role_id, permission_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS project (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(500),
+    mode VARCHAR(50) DEFAULT 'magic-canvas',
+    cover VARCHAR(500),
+    user_id BIGINT NOT NULL,
+    is_template TINYINT DEFAULT 0,
+    is_public TINYINT DEFAULT 0,
+    status TINYINT DEFAULT 1,
+    tags VARCHAR(500),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS canvas_object (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id BIGINT NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    title VARCHAR(100),
+    content TEXT,
+    position_x DOUBLE DEFAULT 0,
+    position_y DOUBLE DEFAULT 0,
+    width DOUBLE DEFAULT 320,
+    height DOUBLE DEFAULT 220,
+    meta JSON,
+    sort INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS workflow (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id BIGINT NOT NULL UNIQUE,
+    name VARCHAR(100) DEFAULT 'default',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS workflow_node (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    workflow_id BIGINT NOT NULL,
+    node_type VARCHAR(30) NOT NULL,
+    label VARCHAR(100),
+    position_x DOUBLE DEFAULT 0,
+    position_y DOUBLE DEFAULT 0,
+    config JSON,
+    status VARCHAR(30) DEFAULT 'idle',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS workflow_edge (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    workflow_id BIGINT NOT NULL,
+    source_node_id BIGINT NOT NULL,
+    target_node_id BIGINT NOT NULL,
+    source_handle VARCHAR(50),
+    target_handle VARCHAR(50)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS asset (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    project_id BIGINT,
+    type VARCHAR(20) NOT NULL,
+    title VARCHAR(100),
+    file_key VARCHAR(500),
+    url VARCHAR(500) NOT NULL,
+    size BIGINT DEFAULT 0,
+    mime_type VARCHAR(100),
+    favorite TINYINT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS credit_account (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL UNIQUE,
+    balance INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS credit_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    amount INT NOT NULL,
+    balance INT NOT NULL,
+    type VARCHAR(30) NOT NULL,
+    remark VARCHAR(200),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS ai_provider_config (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    provider VARCHAR(30) NOT NULL,
+    base_url VARCHAR(500),
+    api_key_enc VARCHAR(1000),
+    model VARCHAR(100),
+    is_active TINYINT DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_user_provider (user_id, provider)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS notification (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    content TEXT,
+    type VARCHAR(30) DEFAULT 'system',
+    is_read TINYINT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS system_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    module VARCHAR(50),
+    action VARCHAR(50),
+    user_id BIGINT,
+    ip VARCHAR(50),
+    detail TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO role (name, code, description) VALUES
+('User', 'USER', 'Regular user'),
+('Admin', 'ADMIN', 'Administrator'),
+('Super Admin', 'SUPER_ADMIN', 'Super administrator')
+ON DUPLICATE KEY UPDATE name=VALUES(name);
+
+INSERT INTO user (username, password, nickname, status) VALUES
+('admin', '$2a$10$DtyUGpRSCfqWFta96fSCmeaV9C.GawuBiZsZ7.737flJkHI7JUoUe', 'Super Admin', 1)
+ON DUPLICATE KEY UPDATE username=VALUES(username);
+
+INSERT INTO user_role (user_id, role_id)
+SELECT u.id, r.id FROM user u, role r WHERE u.username='admin' AND r.code='SUPER_ADMIN'
+ON DUPLICATE KEY UPDATE user_id=VALUES(user_id);
+
+INSERT INTO credit_account (user_id, balance)
+SELECT id, 10000 FROM user WHERE username='admin'
+ON DUPLICATE KEY UPDATE user_id=VALUES(user_id);

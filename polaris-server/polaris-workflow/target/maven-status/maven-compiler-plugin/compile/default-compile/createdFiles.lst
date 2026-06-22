@@ -1,0 +1,12 @@
+com\polaris\workflow\dto\WorkflowNodeDTO.class
+com\polaris\workflow\dto\SaveWorkflowRequest.class
+com\polaris\workflow\entity\WorkflowNode.class
+com\polaris\workflow\entity\WorkflowEdge.class
+com\polaris\workflow\mapper\WorkflowEdgeMapper.class
+com\polaris\workflow\entity\Workflow.class
+com\polaris\workflow\service\WorkflowService.class
+com\polaris\workflow\controller\WorkflowController.class
+com\polaris\workflow\dto\WorkflowDTO.class
+com\polaris\workflow\dto\WorkflowEdgeDTO.class
+com\polaris\workflow\mapper\WorkflowMapper.class
+com\polaris\workflow\mapper\WorkflowNodeMapper.class
