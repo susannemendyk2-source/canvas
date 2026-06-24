@@ -1,158 +1,161 @@
 <template>
-  <div class="mx-auto max-w-4xl p-6">
-    <div class="mb-6 flex items-center gap-4">
-      <button class="grid size-9 place-items-center rounded-lg border border-white/10 text-white/55 transition hover:bg-white/8 hover:text-white" @click="goBack">
+  <main class="mx-auto max-w-6xl px-6 py-8">
+    <section class="mb-6 flex items-center gap-4">
+      <button class="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/5 text-white/55 transition hover:bg-white/8 hover:text-white" @click="navigateTo('/studio')">
         <ArrowLeft class="size-4" />
       </button>
-      <h1 class="text-2xl font-semibold">设置 / Settings</h1>
-    </div>
-
-    <div class="mb-6 flex gap-2">
-      <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="['rounded-lg px-4 py-2 text-sm transition', activeTab === tab.id ? 'bg-cyan-500/12 text-cyan-100 ring-1 ring-cyan-400/30' : 'text-white/48 hover:bg-white/6 hover:text-white']">
-        {{ tab.label }}
-      </button>
-    </div>
-
-    <div v-if="activeTab === 'profile'" class="rounded-xl border border-white/10 bg-white/5 p-6">
-      <div class="mb-6 flex items-center gap-4">
-        <div class="grid size-16 place-items-center rounded-full bg-cyan-100 text-xl font-semibold text-[#061018]">
-          {{ (nickname || 'U').charAt(0) }}
-        </div>
-        <div>
-          <button class="rounded-lg border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-white/72">更换头像 / Change Avatar</button>
-          <p class="mt-1 text-xs text-white/35">支持 JPG, PNG, GIF</p>
-        </div>
+      <div>
+        <h1 class="text-2xl font-semibold text-white">{{ t('设置', 'Settings') }}</h1>
+        <p class="mt-1 text-sm text-white/45">{{ t('管理账号、偏好和模型服务配置。', 'Manage account, preferences and model provider settings.') }}</p>
       </div>
+    </section>
 
-      <div class="grid gap-4 md:grid-cols-2">
-        <div>
-          <label class="mb-1.5 block text-xs text-white/48">昵称 / Nickname</label>
-          <input v-model="nickname" class="h-11 w-full rounded-lg border border-white/8 bg-black/60 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
-        </div>
-        <div>
-          <label class="mb-1.5 block text-xs text-white/48">邮箱 / Email</label>
-          <input v-model="email" class="h-11 w-full rounded-lg border border-white/8 bg-black/60 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
-        </div>
-        <div>
-          <label class="mb-1.5 block text-xs text-white/48">手机 / Phone</label>
-          <input v-model="phone" class="h-11 w-full rounded-lg border border-white/8 bg-black/60 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
-        </div>
-      </div>
-      <button class="mt-6 h-10 rounded-lg bg-cyan-100 px-6 text-sm font-medium text-[#061018]">保存 / Save</button>
-    </div>
-
-    <div v-if="activeTab === 'password'" class="rounded-xl border border-white/10 bg-white/5 p-6">
-      <div class="grid gap-4 md:grid-cols-2">
-        <div>
-          <label class="mb-1.5 block text-xs text-white/48">旧密码 / Old Password</label>
-          <input v-model="oldPassword" type="password" class="h-11 w-full rounded-lg border border-white/8 bg-black/60 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
-        </div>
-        <div>
-          <label class="mb-1.5 block text-xs text-white/48">新密码 / New Password</label>
-          <input v-model="newPassword" type="password" class="h-11 w-full rounded-lg border border-white/8 bg-black/60 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
-        </div>
-        <div>
-          <label class="mb-1.5 block text-xs text-white/48">确认新密码 / Confirm Password</label>
-          <input v-model="confirmNewPassword" type="password" class="h-11 w-full rounded-lg border border-white/8 bg-black/60 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
-        </div>
-      </div>
-      <button class="mt-6 h-10 rounded-lg bg-cyan-100 px-6 text-sm font-medium text-[#061018]">修改密码 / Change Password</button>
-    </div>
-
-    <div v-if="activeTab === 'api'" class="rounded-xl border border-white/10 bg-white/5 p-6">
-      <div class="mb-5 flex gap-2">
-        <button v-for="tab in apiTabs" :key="tab.id" @click="activeApiTab = tab.id" :class="['rounded-lg px-4 py-2 text-sm transition', activeApiTab === tab.id ? 'bg-cyan-500/12 text-cyan-100 ring-1 ring-cyan-400/30' : 'text-white/48 hover:bg-white/6 hover:text-white']">
+    <section class="grid gap-6 lg:grid-cols-[220px_1fr]">
+      <aside class="rounded-lg border border-white/10 bg-white/[0.04] p-2">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          class="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm transition"
+          :class="activeTab === tab.id ? 'bg-cyan-100/10 text-cyan-50' : 'text-white/55 hover:bg-white/6 hover:text-white'"
+          @click="activeTab = tab.id"
+        >
+          <component :is="tab.icon" class="size-4" />
           {{ tab.label }}
         </button>
-      </div>
+      </aside>
 
-      <div class="rounded-xl border border-white/8 bg-black/16 p-4">
-        <div class="mb-4 flex items-center gap-2 text-xs text-white/42">
-          <span :class="['size-2 rounded-full', currentProvider.apiKey ? 'bg-emerald-400' : 'bg-white/28']" />
-          {{ currentProvider.apiKey ? '已配置 API / Configured' : '未配置 API / Not configured' }}
-        </div>
-
-        <label class="mb-4 block">
-          <span class="mb-2 flex items-center gap-2 text-xs text-white/48">
-            <Link2 class="size-4" />
-            API Base URL
-          </span>
-          <input v-model="currentProvider.baseUrl" class="h-11 w-full rounded-lg border border-white/8 bg-black px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
-        </label>
-
-        <label class="mb-4 block">
-          <span class="mb-2 flex items-center gap-2 text-xs text-white/48">
-            <KeyRound class="size-4" />
-            API Key
-          </span>
-          <div class="flex h-11 items-center rounded-lg border border-white/8 bg-black focus-within:border-cyan-400/60">
-            <input v-model="currentProvider.apiKey" :type="showApiKey ? 'text' : 'password'" class="min-w-0 flex-1 bg-transparent px-3 text-sm text-white outline-none placeholder:text-white/25" />
-            <button type="button" @click="showApiKey = !showApiKey" class="grid size-10 place-items-center text-white/42 hover:text-white">
-              <EyeOff v-if="showApiKey" class="size-4" />
-              <Eye v-else class="size-4" />
-            </button>
+      <div class="min-w-0">
+        <section v-if="activeTab === 'profile'" class="rounded-lg border border-white/10 bg-white/[0.04] p-6">
+          <div class="mb-6 flex items-center gap-4">
+            <div class="grid size-16 place-items-center rounded-full bg-cyan-100 text-xl font-semibold text-[#061018]">{{ profileInitial }}</div>
+            <div>
+              <h2 class="text-base font-semibold text-white">{{ t('个人资料', 'Profile') }}</h2>
+              <p class="text-sm text-white/42">{{ t('这些信息用于顶部栏、用户中心和团队协作显示。', 'Shown in the top bar, account center and collaboration views.') }}</p>
+            </div>
           </div>
-        </label>
 
-        <label class="mb-5 block">
-          <span class="mb-2 flex items-center gap-2 text-xs text-white/48">
-            <Cpu class="size-4" />
-            默认模型 / Default Model
-          </span>
-          <select v-model="currentProvider.model" class="h-11 w-full rounded-lg border border-white/8 bg-black px-3 text-sm text-white outline-none focus:border-cyan-400/60">
-            <option v-for="m in modelOptions[activeApiTab]" :key="m" :value="m">{{ m }}</option>
-          </select>
-        </label>
+          <div class="grid gap-4 md:grid-cols-2">
+            <label class="block">
+              <span class="mb-1.5 block text-xs text-white/48">{{ t('用户名', 'Username') }}</span>
+              <input v-model="form.username" class="h-11 w-full rounded-lg border border-white/8 bg-black/45 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
+            </label>
+            <label class="block">
+              <span class="mb-1.5 block text-xs text-white/48">{{ t('昵称', 'Nickname') }}</span>
+              <input v-model="form.nickname" class="h-11 w-full rounded-lg border border-white/8 bg-black/45 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
+            </label>
+            <label class="block">
+              <span class="mb-1.5 block text-xs text-white/48">{{ t('邮箱', 'Email') }}</span>
+              <input v-model="form.email" class="h-11 w-full rounded-lg border border-white/8 bg-black/45 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
+            </label>
+            <label class="block">
+              <span class="mb-1.5 block text-xs text-white/48">{{ t('手机', 'Phone') }}</span>
+              <input v-model="form.phone" class="h-11 w-full rounded-lg border border-white/8 bg-black/45 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
+            </label>
+          </div>
 
-        <div class="grid gap-3 sm:grid-cols-2">
-          <button class="h-11 rounded-lg bg-cyan-600 text-sm font-medium text-white transition hover:bg-cyan-500">保存配置 / Save</button>
-          <button class="h-11 rounded-lg border border-white/10 bg-white/6 text-sm text-white/72 transition hover:bg-white/10">测试连接 / Test</button>
-        </div>
+          <div class="mt-6 flex items-center gap-3">
+            <button class="h-10 rounded-lg bg-cyan-100 px-5 text-sm font-medium text-[#061018] transition hover:bg-white" @click="saveProfile">{{ t('保存资料', 'Save Profile') }}</button>
+            <span class="text-xs text-emerald-300/80">{{ profileSaved }}</span>
+          </div>
+        </section>
+
+        <section v-if="activeTab === 'preferences'" class="rounded-lg border border-white/10 bg-white/[0.04] p-6">
+          <h2 class="text-base font-semibold text-white">{{ t('偏好设置', 'Preferences') }}</h2>
+          <div class="mt-5 grid gap-4 md:grid-cols-2">
+            <label class="block">
+              <span class="mb-1.5 block text-xs text-white/48">{{ t('界面语言', 'Language') }}</span>
+              <select v-model="languageProxy" class="h-11 w-full rounded-lg border border-white/8 bg-black/45 px-3 text-sm text-white outline-none focus:border-cyan-400/60">
+                <option value="zh">中文</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="mb-1.5 block text-xs text-white/48">{{ t('主题', 'Theme') }}</span>
+              <select v-model="themeProxy" class="h-11 w-full rounded-lg border border-white/8 bg-black/45 px-3 text-sm text-white outline-none focus:border-cyan-400/60">
+                <option value="dark">{{ t('深色', 'Dark') }}</option>
+                <option value="light">{{ t('浅色', 'Light') }}</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section v-if="activeTab === 'security'" class="rounded-lg border border-white/10 bg-white/[0.04] p-6">
+          <h2 class="text-base font-semibold text-white">{{ t('安全', 'Security') }}</h2>
+          <div class="mt-5 grid gap-4 md:grid-cols-3">
+            <input v-model="password.old" type="password" :placeholder="t('当前密码', 'Current password')" class="h-11 rounded-lg border border-white/8 bg-black/45 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
+            <input v-model="password.next" type="password" :placeholder="t('新密码', 'New password')" class="h-11 rounded-lg border border-white/8 bg-black/45 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
+            <input v-model="password.confirm" type="password" :placeholder="t('确认新密码', 'Confirm password')" class="h-11 rounded-lg border border-white/8 bg-black/45 px-3 text-sm text-white outline-none focus:border-cyan-400/60" />
+          </div>
+          <p class="mt-3 text-xs text-white/35">{{ t('后端密码修改接口接入后，此处可以直接提交真实变更。', 'This form is ready to connect to the backend password update endpoint.') }}</p>
+        </section>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 </template>
 
 <script setup lang="ts">
-import { Link2, KeyRound, Cpu, Eye, EyeOff, ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, Languages, Lock, UserRound } from 'lucide-vue-next'
+import { useAuthStore } from '~/stores/authStore'
+import { useSettingsStore } from '~/stores/settingsStore'
+import { onMounted } from 'vue'
 
-const activeTab = ref('profile')
+const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
+const activeTab = ref<'profile' | 'preferences' | 'security'>('profile')
+const profileSaved = ref('')
+const t = (zh: string, en: string) => settingsStore.t(zh, en)
 
-function goBack() {
-  navigateTo('/studio')
-}
-const nickname = ref('')
-const email = ref('')
-const phone = ref('')
-const oldPassword = ref('')
-const newPassword = ref('')
-const confirmNewPassword = ref('')
-const activeApiTab = ref('deepseek')
-const showApiKey = ref(false)
-
-const tabs = [
-  { id: 'profile', label: '个人资料 / Profile' },
-  { id: 'password', label: '密码修改 / Password' },
-  { id: 'api', label: 'API 配置 / API Config' },
-]
-
-const apiTabs = [
-  { id: 'deepseek', label: 'DeepSeek API' },
-  { id: 'runninghub', label: 'RunningHub' },
-  { id: 'volcano', label: '火山引擎' },
-]
-
-const modelOptions: Record<string, string[]> = {
-  deepseek: ['deepseek-chat', 'deepseek-reasoner'],
-  runninghub: ['nano-banana-pro', 'nano-banana', 'gpt-image-2', 'custom-workflow'],
-  volcano: ['doubao-seed-1-6', 'doubao-vision-pro', 'seedream-3-0', 'custom-model'],
-}
-
-const providers = ref<Record<string, { baseUrl: string; apiKey: string; model: string }>>({
-  deepseek: { baseUrl: 'https://api.deepseek.com', apiKey: '', model: 'deepseek-chat' },
-  runninghub: { baseUrl: '', apiKey: '', model: 'nano-banana-pro' },
-  volcano: { baseUrl: '', apiKey: '', model: 'doubao-seed-1-6' },
+const form = reactive({
+  username: '',
+  nickname: '',
+  email: '',
+  phone: '',
 })
 
-const currentProvider = computed(() => providers.value[activeApiTab.value])
+const password = reactive({
+  old: '',
+  next: '',
+  confirm: '',
+})
+
+const tabs = computed(() => [
+  { id: 'profile', label: t('个人资料', 'Profile'), icon: UserRound },
+  { id: 'preferences', label: t('偏好', 'Preferences'), icon: Languages },
+
+  { id: 'security', label: t('安全', 'Security'), icon: Lock },
+])
+
+const profileInitial = computed(() => (form.nickname || form.username || 'P').charAt(0).toUpperCase())
+
+const languageProxy = computed({
+  get: () => settingsStore.language,
+  set: (value: 'zh' | 'en') => settingsStore.setLanguage(value),
+})
+
+const themeProxy = computed({
+  get: () => settingsStore.theme,
+  set: (value: 'dark' | 'light') => {
+    if (settingsStore.theme !== value) settingsStore.toggleTheme()
+    if (import.meta.client) document.documentElement.classList.toggle('light', value === 'light')
+  },
+})
+
+onMounted(() => {
+  settingsStore.init()
+  authStore.init()
+  Object.assign(form, {
+    username: authStore.user?.username || '',
+    nickname: authStore.user?.nickname || '',
+    email: authStore.user?.email || '',
+    phone: authStore.user?.phone || '',
+  })
+})
+
+function saveProfile() {
+  authStore.user = { ...(authStore.user || {}), ...form }
+  if (import.meta.client) localStorage.setItem('polaris.user', JSON.stringify(authStore.user))
+  profileSaved.value = t('已保存', 'Saved')
+  window.setTimeout(() => (profileSaved.value = ''), 1800)
+}
+
 </script>

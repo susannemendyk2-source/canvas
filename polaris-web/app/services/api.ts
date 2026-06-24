@@ -1,10 +1,10 @@
 import axios from 'axios'
 
+const apiBase = import.meta.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080'
+
 const api = axios.create({
-  baseURL: import.meta.client
-    ? (useRuntimeConfig().public.apiBase as string)
-    : 'http://localhost:8080',
-  timeout: 30000,
+  baseURL: apiBase,
+  timeout: 120000,
   headers: { 'Content-Type': 'application/json' }
 })
 

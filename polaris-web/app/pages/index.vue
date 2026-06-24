@@ -1,5 +1,5 @@
 <template>
-  <main @click="handleNavClick" class="min-h-screen overflow-hidden bg-[#03050b] text-white">
+  <main class="min-h-screen overflow-hidden bg-[#03050b] text-white">
     <section class="relative min-h-screen overflow-hidden px-5 pb-16">
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_8%,rgba(83,142,255,.20),transparent_28%),radial-gradient(circle_at_18%_22%,rgba(70,229,255,.12),transparent_24%),linear-gradient(180deg,#05070d_0%,#060912_52%,#03050b_100%)]" />
       <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] bg-[size:48px_48px]" />
@@ -18,28 +18,25 @@
         </NuxtLink>
 
         <nav class="hidden items-center gap-6 text-sm text-white/52 lg:flex">
-          <NuxtLink v-for="(item, i) in navItems" :key="item" :to="navLinks[i]" class="transition hover:text-cyan-100">
-            {{ item }}
+          <NuxtLink v-for="item in navItems" :key="item.label" :to="item.to" class="transition hover:text-cyan-100">
+            {{ item.label }}
           </NuxtLink>
         </nav>
 
         <div class="flex items-center gap-2 text-xs text-white/58">
-          <span class="hidden items-center gap-1 rounded-full border border-white/10 bg-white/6 px-3 py-1.5 sm:flex">
-            <Globe2 class="size-3.5" />
-            中 / EN
-          </span>
-          <span class="hidden rounded-full border border-white/10 bg-white/6 px-3 py-1.5 md:inline-flex">
+          <NuxtLink to="/credits" class="hidden rounded-full border border-white/10 bg-white/6 px-3 py-1.5 md:inline-flex">
             <Crown class="mr-1 size-3.5 text-cyan-100" />
-            会员中心 3,520
-          </span>
-          <button class="grid size-8 place-items-center rounded-full border border-white/10 bg-white/6">
-            <Moon class="size-4" />
+            {{ t('积分', 'Credits') }}
+          </NuxtLink>
+          <button class="inline-flex h-9 items-center gap-1 rounded-full border border-white/10 bg-white/6 px-3 text-xs text-white/72 transition hover:border-cyan-200/35 hover:text-cyan-50" @click="settingsStore.toggleLanguage()">
+            <Globe class="size-3.5" />
+            {{ settingsStore.language.toUpperCase() }}
           </button>
-          <button class="grid size-8 place-items-center rounded-full border border-white/10 bg-white/6">
-            <Bell class="size-4" />
-          </button>
-          <NuxtLink to="/login" class="grid size-9 place-items-center rounded-full bg-cyan-100 font-semibold text-[#061018]">
+          <NuxtLink v-if="!authStore.isAuthenticated" to="/login" class="grid size-9 place-items-center rounded-full bg-cyan-100 font-semibold text-[#061018]">
             P
+          </NuxtLink>
+          <NuxtLink v-else to="/studio" class="grid size-9 place-items-center rounded-full bg-gradient-to-br from-studio-cyan to-studio-violet text-xs font-bold text-white">
+            {{ userInitial }}
           </NuxtLink>
         </div>
       </header>
@@ -48,12 +45,13 @@
         <div class="text-center">
           <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-200/8 px-4 py-2 text-xs text-cyan-100">
             <Compass class="size-4" />
-            Polaris Command Center · 北极星创作中心          </div>
+            {{ t('Polaris 指挥中心', 'Polaris Command Center') }}
+          </div>
           <h1 class="mx-auto max-w-4xl text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
-            向北极星校准你的 AI 创作流程
+            {{ t('把 AI 创作工作流对齐到一个北极星目标', 'Align your AI creative workflow to a north star') }}
           </h1>
           <p class="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/52 md:text-base">
-            从一句灵感出发，Polaris 会把提示词、素材、节点工作流和生成结果组织成清晰的星图。Navigate prompts, assets, workflows and renders on one intelligent canvas.
+            {{ t('把一个想法转化为 Prompt、素材、画布卡片、Workflow 节点和生成结果，并集中在一个高效创作空间中。', 'Turn one idea into prompts, assets, canvas cards, workflow nodes and generated results on one focused creative workspace.') }}
           </p>
         </div>
 
@@ -63,18 +61,15 @@
           <NuxtLink to="/studio" class="group grid h-28 w-28 place-items-center rounded-2xl border border-cyan-100/16 bg-white/6 text-sm text-white/78 transition hover:border-cyan-200/45 hover:bg-cyan-100/10">
             <span class="grid gap-2 text-center">
               <Plus class="mx-auto size-5 transition group-hover:rotate-90" />
-              新建星图
-              <span class="text-[11px] text-white/35">New Project</span>
+              {{ t('新建项目', 'New Project') }}
             </span>
           </NuxtLink>
         </div>
 
         <section class="mt-16">
           <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-lg font-semibold">推荐航线 / Recommended Routes</h2>
-            <NuxtLink to="/studio" class="text-xs text-white/44 hover:text-cyan-100">
-              查看全部 / View all
-            </NuxtLink>
+            <h2 class="text-lg font-semibold">{{ t('推荐路线', 'Recommended Routes') }}</h2>
+            <NuxtLink to="/projects" class="text-xs text-white/44 hover:text-cyan-100">{{ t('查看全部', 'View all') }}</NuxtLink>
           </div>
           <div class="grid gap-4 md:grid-cols-3">
             <NuxtLink
@@ -96,36 +91,42 @@
         <section class="mt-12">
           <div class="mb-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <h2 class="text-xl font-semibold">探索 Polaris 星图</h2>
-              <p class="mt-2 text-sm text-white/45">从公开项目、模板和节点工作流里寻找下一条创作航线。Explore public projects, templates and workflow constellations.</p>
+              <h2 class="text-xl font-semibold">{{ t('探索 Polaris 星图', 'Explore Polaris Maps') }}</h2>
+              <p class="mt-2 text-sm text-white/45">{{ t('查找公开项目、模板和 Workflow 星座，为下一条创作路线做准备。', 'Find public projects, templates and workflow constellations for your next route.') }}</p>
             </div>
             <label class="flex h-10 w-full items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 text-sm text-white/42 md:w-72">
               <Search class="size-4" />
-              <input class="w-full bg-transparent outline-none placeholder:text-white/32" placeholder="搜索星图 / Search routes" />
+              <input v-model="searchQuery" class="w-full bg-transparent outline-none placeholder:text-white/32" :placeholder="t('搜索路线', 'Search routes')" />
             </label>
           </div>
           <div class="mb-5 flex flex-wrap gap-2">
-            <button v-for="filter in filters" :key="filter" class="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-white/66 transition hover:border-cyan-300/30 hover:text-white">
-              {{ filter }}
+            <button
+              v-for="filter in filters"
+              :key="filter.value"
+              class="rounded-full border px-3 py-1.5 text-xs transition"
+              :class="activeFilter === filter.value ? 'border-cyan-300/30 bg-cyan-100/10 text-white' : 'border-white/10 bg-white/6 text-white/66 hover:border-cyan-300/30 hover:text-white'"
+              @click="activeFilter = filter.value"
+            >
+              {{ filter.label }}
             </button>
           </div>
           <div class="grid gap-4 md:grid-cols-4">
             <NuxtLink
-              v-for="(item, index) in explore"
-              :key="item[0]"
+              v-for="(item, index) in filteredExplore"
+              :key="item.title"
               to="/studio"
               class="group overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:-translate-y-1 hover:border-cyan-100/25"
             >
-              <div :class="`relative h-36 bg-gradient-to-br ${item[2]}`">
+              <div :class="`relative h-36 bg-gradient-to-br ${item.tone}`">
                 <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_35%,rgba(255,255,255,.18),transparent_28%)]" />
               </div>
               <div class="p-3">
                 <div class="flex items-center gap-2 text-[11px] text-white/40">
                   <span class="grid size-5 place-items-center rounded-full bg-white/10">{{ index + 1 }}</span>
-                  constellation
+                  {{ t('星座', 'constellation') }}
                 </div>
-                <h3 class="mt-2 text-sm font-semibold">{{ item[0] }}</h3>
-                <p class="mt-1 line-clamp-1 text-xs text-white/45">{{ item[1] }}</p>
+                <h3 class="mt-2 text-sm font-semibold">{{ item.title }}</h3>
+                <p class="mt-1 line-clamp-1 text-xs text-white/45">{{ item.subtitle }}</p>
               </div>
             </NuxtLink>
           </div>
@@ -140,52 +141,66 @@
 </template>
 
 <script setup lang="ts">
-import { Navigation, Globe2, Crown, Moon, Bell, Compass, Plus, Search, Map } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
+import { Compass, Crown, Globe, Map, Navigation, Plus, Search } from 'lucide-vue-next'
 import GoalComposer from '~/components/home/GoalComposer.vue'
+import { useAuthStore } from '~/stores/authStore'
+import { useSettingsStore } from '~/stores/settingsStore'
 
-function handleNavClick(e: MouseEvent) {
-  const anchor = (e.target as HTMLElement).closest('a[href^="/"]')
-  if (anchor) {
-    const href = anchor.getAttribute('href')
-    if (href && href.startsWith('/')) {
-      e.preventDefault()
-      navigateTo(href)
-    }
-  }
-}
+const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
+const t = (zh: string, en: string) => settingsStore.t(zh, en)
+const searchQuery = ref('')
+const activeFilter = ref('All')
 
-const navItems = ['产品 / Product', '星图画布 / Canvas', '工作流 / Workflow', '模板 / Templates', '探索 / Explore']
-const navLinks = ['/', '/studio', '/studio?mode=workflow', '/admin/templates', '/projects']
+const userInitial = computed(() => {
+  const name = authStore.user?.nickname || authStore.user?.username || ''
+  return name ? name.charAt(0).toUpperCase() : 'P'
+})
 
-const missionCards = [
-  {
-    title: 'Polaris Brief',
-    subtitle: '把一句想法校准成完整创作航线 / Align one idea into a production route',
-    metric: '01',
-    tone: 'from-cyan-400/24 via-blue-500/18 to-indigo-800/24'
-  },
-  {
-    title: 'Constellation Workflow',
-    subtitle: '提示词、图像、视频与输出节点自动成图 / Map prompts, images, video and output nodes',
-    metric: '02',
-    tone: 'from-violet-400/24 via-sky-500/16 to-slate-900/30'
-  },
-  {
-    title: 'North Star Render',
-    subtitle: '稳定生成短片、海报和品牌素材 / Generate films, posters and brand assets',
-    metric: '03',
-    tone: 'from-emerald-300/18 via-cyan-400/18 to-blue-950/35'
-  }
-]
+const navItems = computed(() => [
+  { label: t('产品', 'Product'), to: '/' },
+  { label: t('画布', 'Canvas'), to: '/studio' },
+  { label: 'Workflow', to: '/studio?mode=workflow' },
+  { label: t('模板', 'Templates'), to: '/admin/templates' },
+  { label: t('探索', 'Explore'), to: '/projects' }
+])
 
-const explore = [
-  ['Aurora Product Film', '电商新品发布 / Product launch', 'from-cyan-400/30 to-blue-950/60'],
-  ['Orbit Storyboard', '分镜脚本生成 / Storyboard route', 'from-indigo-400/30 to-violet-950/60'],
-  ['Deep Space Poster', '品牌海报实验 / Brand poster lab', 'from-fuchsia-400/24 to-slate-950/60'],
-  ['Signal Cutdown', '短视频混剪 / Short-form cutdown', 'from-emerald-300/24 to-cyan-950/60'],
-  ['Character Lock', '角色一致性 / Character consistency', 'from-blue-300/24 to-indigo-950/60'],
-  ['Studio Archive', '素材库管理 / Asset archive', 'from-amber-300/20 to-slate-950/60']
-]
+const missionCards = computed(() => [
+  { title: 'Polaris Brief', subtitle: t('把一个想法对齐成可生产的创作路线。', 'Align one idea into a production route.'), metric: '01', tone: 'from-cyan-400/24 via-blue-500/18 to-indigo-800/24' },
+  { title: 'Constellation Workflow', subtitle: t('映射 Prompt、图像、视频和输出节点。', 'Map prompts, images, video and output nodes.'), metric: '02', tone: 'from-violet-400/24 via-sky-500/16 to-slate-900/30' },
+  { title: 'North Star Render', subtitle: t('生成短片、海报和品牌资产。', 'Generate films, posters and brand assets.'), metric: '03', tone: 'from-emerald-300/18 via-cyan-400/18 to-blue-950/35' }
+])
 
-const filters = ['全部 / All', '星图画布 / Star Map', '视频生成 / Video', '图片生成 / Image', '分镜 / Storyboard', '品牌 / Brand', '电商 / Commerce', '团队 / Team']
+const explore = computed(() => [
+  { title: t('极光产品短片', 'Aurora Product Film'), subtitle: t('产品发布', 'Product launch'), tag: 'Video', tone: 'from-cyan-400/30 to-blue-950/60' },
+  { title: t('轨道分镜', 'Orbit Storyboard'), subtitle: t('分镜路线', 'Storyboard route'), tag: 'Storyboard', tone: 'from-indigo-400/30 to-violet-950/60' },
+  { title: t('深空海报', 'Deep Space Poster'), subtitle: t('品牌海报实验室', 'Brand poster lab'), tag: 'Image', tone: 'from-fuchsia-400/24 to-slate-950/60' },
+  { title: t('信号短切', 'Signal Cutdown'), subtitle: t('短视频裁切', 'Short-form cutdown'), tag: 'Video', tone: 'from-emerald-300/24 to-cyan-950/60' },
+  { title: t('角色锁定', 'Character Lock'), subtitle: t('角色一致性', 'Character consistency'), tag: 'Image', tone: 'from-blue-300/24 to-indigo-950/60' },
+  { title: t('工作室档案', 'Studio Archive'), subtitle: t('素材档案', 'Asset archive'), tag: 'Team', tone: 'from-amber-300/20 to-slate-950/60' }
+])
+
+const filters = computed(() => [
+  { value: 'All', label: t('全部', 'All') },
+  { value: 'Star Map', label: t('星图', 'Star Map') },
+  { value: 'Video', label: t('视频', 'Video') },
+  { value: 'Image', label: t('图像', 'Image') },
+  { value: 'Storyboard', label: t('分镜', 'Storyboard') },
+  { value: 'Brand', label: t('品牌', 'Brand') },
+  { value: 'Team', label: t('团队', 'Team') }
+])
+
+const filteredExplore = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+  return explore.value.filter((item) => {
+    const matchesFilter = activeFilter.value === 'All' || item.tag === activeFilter.value
+    const matchesQuery = !query || `${item.title} ${item.subtitle}`.toLowerCase().includes(query)
+    return matchesFilter && matchesQuery
+  })
+})
+
+onMounted(() => {
+  settingsStore.init()
+})
 </script>

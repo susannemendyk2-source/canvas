@@ -9,5 +9,7 @@ public record LoginResponse(
     Long userId,
     String username,
     String nickname,
+    String email,
+    Integer credits,
     List<String> roles
 ) {}

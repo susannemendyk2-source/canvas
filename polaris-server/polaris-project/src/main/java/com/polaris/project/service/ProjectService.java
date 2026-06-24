@@ -50,6 +50,7 @@ public class ProjectService {
         project.setName(req.getName());
         project.setDescription(req.getDescription());
         project.setMode(req.getMode() != null ? req.getMode() : "magic-canvas");
+        project.setMeta(req.getMeta());
         project.setCreatedAt(LocalDateTime.now());
         project.setUpdatedAt(LocalDateTime.now());
         projectMapper.insert(project);
@@ -66,6 +67,7 @@ public class ProjectService {
         if (req.getMode() != null) project.setMode(req.getMode());
         if (req.getStatus() != null) project.setStatus(req.getStatus());
         if (req.getTags() != null) project.setTags(req.getTags());
+        if (req.getMeta() != null) project.setMeta(req.getMeta());
         project.setUpdatedAt(LocalDateTime.now());
         projectMapper.updateById(project);
     }
@@ -136,6 +138,7 @@ public class ProjectService {
         dto.setCover(project.getCover());
         dto.setStatus(project.getStatus());
         dto.setTags(project.getTags());
+        dto.setMeta(project.getMeta());
         dto.setCreatedAt(project.getCreatedAt());
         dto.setUpdatedAt(project.getUpdatedAt());
         return dto;

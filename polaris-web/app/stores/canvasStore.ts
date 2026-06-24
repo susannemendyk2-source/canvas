@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import type { CanvasObject, CanvasObjectType } from '~/types'
+import type { CanvasLink, CanvasObject, CanvasObjectType } from '~/types'
 import { uid } from '~/utils'
 import { projectService } from '~/services/projectService'
+import { useAssetStore } from '~/stores/assetStore'
 
 type CanvasPatch = Partial<Omit<CanvasObject, 'id'>>
 
@@ -21,7 +22,9 @@ interface BackendCanvasObject {
 
 export const useCanvasStore = defineStore('canvas', () => {
   const objects = ref<CanvasObject[]>([])
+  const links = ref<CanvasLink[]>([])
   const selectedId = ref<string | null>(null)
+  const connectionStartId = ref<string | null>(null)
   const activeProjectId = ref<number | null>(null)
   const loading = ref(false)
   const saving = ref(false)
@@ -29,9 +32,31 @@ export const useCanvasStore = defineStore('canvas', () => {
   const lastSavedAt = ref<string | null>(null)
   const zoom = ref(86)
   const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  let linksSaveTimer: ReturnType<typeof setTimeout> | null = null
   const creatingIds = new Set<string>()
+  const createPromises = new Map<string, Promise<void>>()
 
   const selectedObject = computed(() => objects.value.find((item) => item.id === selectedId.value) || null)
+  const selectedLinks = computed(() => links.value.filter((link) => link.sourceId === selectedId.value || link.targetId === selectedId.value))
+
+  function getLinksStorageKey(projectId = activeProjectId.value) {
+    return projectId ? `polaris.canvas.links.${projectId}` : 'polaris.canvas.links.local'
+  }
+
+  function loadLocalLinks(projectId = activeProjectId.value) {
+    if (!import.meta.client) return
+    try {
+      const raw = localStorage.getItem(getLinksStorageKey(projectId))
+      links.value = raw ? JSON.parse(raw) : []
+    } catch {
+      links.value = []
+    }
+  }
+
+  function persistLocalLinks() {
+    if (!import.meta.client) return
+    localStorage.setItem(getLinksStorageKey(), JSON.stringify(links.value))
+  }
 
   function normalize(dto: BackendCanvasObject): CanvasObject {
     return {
@@ -95,8 +120,26 @@ export const useCanvasStore = defineStore('canvas', () => {
     loading.value = true
     error.value = null
     try {
-      const result: any = await projectService.getObjects(id)
-      objects.value = Array.isArray(result) ? result.map(normalize) : []
+      const [objectsResult, projectResult]: any = await Promise.all([
+        projectService.getObjects(id),
+        projectService.get(id)
+      ])
+      objects.value = Array.isArray(objectsResult) ? objectsResult.map(normalize) : []
+      if (projectResult?.meta) {
+        try {
+          const parsed = JSON.parse(projectResult.meta)
+          if (Array.isArray(parsed)) {
+            links.value = parsed
+            if (import.meta.client) persistLocalLinks()
+          } else {
+            loadLocalLinks(id)
+          }
+        } catch {
+          loadLocalLinks(id)
+        }
+      } else {
+        loadLocalLinks(id)
+      }
       selectedId.value = null
     } catch (err: any) {
       error.value = err?.message || err?.messageText || 'Failed to load canvas'
@@ -125,6 +168,14 @@ export const useCanvasStore = defineStore('canvas', () => {
   }
 
   async function createRemote(id: string) {
+    if (createPromises.has(id)) return createPromises.get(id)!
+    const promise = _createRemote(id)
+    createPromises.set(id, promise)
+    promise.finally(() => createPromises.delete(id))
+    return promise
+  }
+
+  async function _createRemote(id: string) {
     if (creatingIds.has(id)) return
     creatingIds.add(id)
     try {
@@ -134,6 +185,7 @@ export const useCanvasStore = defineStore('canvas', () => {
       const created: any = await projectService.createObject(projectId, toPayload(current))
       const idx = objects.value.findIndex((object) => object.id === id)
       if (idx !== -1) objects.value[idx] = normalize(created)
+      migrateLinkId(id, String(created.id))
       selectedId.value = String(created.id)
       markSaved()
     } catch (err: any) {
@@ -146,7 +198,22 @@ export const useCanvasStore = defineStore('canvas', () => {
   function updateObject(id: string, data: CanvasPatch, sync = true) {
     const idx = objects.value.findIndex((object) => object.id === id)
     if (idx === -1) return
-    objects.value[idx] = { ...objects.value[idx], ...data, dirty: true }
+    const prev = objects.value[idx]
+    const updated = { ...prev, ...data, dirty: true }
+    objects.value[idx] = updated
+
+    // Propagate prompt content to linked cards
+    if (data.content !== undefined && prev.type === 'prompt' && data.content !== prev.content) {
+      const outgoing = links.value.filter((l) => l.sourceId === id)
+      for (const link of outgoing) {
+        const tgtIdx = objects.value.findIndex((o) => o.id === link.targetId)
+        if (tgtIdx !== -1 && objects.value[tgtIdx].content !== data.content) {
+          objects.value[tgtIdx] = { ...objects.value[tgtIdx], content: data.content as string, dirty: true }
+          scheduleSave(objects.value[tgtIdx].id)
+        }
+      }
+    }
+
     if (sync) scheduleSave(id)
   }
 
@@ -186,13 +253,37 @@ export const useCanvasStore = defineStore('canvas', () => {
     }
   }
 
+  async function saveLinksToBackend() {
+    if (!activeProjectId.value) return
+    await projectService.update(activeProjectId.value, { meta: JSON.stringify(links.value) })
+  }
+
+  function scheduleLinksSave() {
+    if (linksSaveTimer) clearTimeout(linksSaveTimer)
+    linksSaveTimer = setTimeout(() => {
+      linksSaveTimer = null
+      void saveLinksToBackend()
+    }, 500)
+  }
+
   async function saveAll() {
     saving.value = true
     error.value = null
     try {
       await ensureProject()
       await Promise.all(objects.value.map((object) => saveObject(object.id)))
+      await saveLinksToBackend()
+      persistLocalLinks()
       markSaved()
+      const assetStore = useAssetStore()
+      assetStore.addHistory({
+        id: `saved-${Date.now()}`,
+        title: objects.value.length > 0 ? `Canvas (${objects.value.length} cards)` : 'Canvas saved',
+        type: 'project',
+        status: 'completed',
+        progress: 100,
+        createdAt: new Date().toLocaleString()
+      })
     } catch (err: any) {
       error.value = err?.message || 'Failed to save canvas'
     } finally {
@@ -216,6 +307,9 @@ export const useCanvasStore = defineStore('canvas', () => {
   async function removeObject(id: string) {
     const obj = objects.value.find((item) => item.id === id)
     objects.value = objects.value.filter((item) => item.id !== id)
+    links.value = links.value.filter((link) => link.sourceId !== id && link.targetId !== id)
+    persistLocalLinks()
+    scheduleLinksSave()
     if (selectedId.value === id) selectedId.value = null
     if (obj?.backendId) {
       try {
@@ -227,6 +321,14 @@ export const useCanvasStore = defineStore('canvas', () => {
     }
   }
 
+  function clearAll() {
+    objects.value = []
+    links.value = []
+    selectedId.value = null
+    connectionStartId.value = null
+    persistLocalLinks()
+  }
+
   function deleteSelected() {
     if (selectedId.value) void removeObject(selectedId.value)
   }
@@ -235,8 +337,95 @@ export const useCanvasStore = defineStore('canvas', () => {
     selectedId.value = id
   }
 
+  function migrateLinkId(oldId: string, newId: string) {
+    if (oldId === newId) return
+    let changed = false
+    links.value = links.value.map((link) => {
+      const next = { ...link }
+      if (next.sourceId === oldId) {
+        next.sourceId = newId
+        changed = true
+      }
+      if (next.targetId === oldId) {
+        next.targetId = newId
+        changed = true
+      }
+      return next
+    })
+    if (changed) persistLocalLinks()
+  }
+
+  function addLink(sourceId: string, targetId: string, label?: string) {
+    if (sourceId === targetId) return null
+    const exists = links.value.some((link) => link.sourceId === sourceId && link.targetId === targetId)
+    if (exists) return null
+    const link: CanvasLink = { id: uid('link'), sourceId, targetId, label }
+    links.value.push(link)
+    persistLocalLinks()
+    scheduleLinksSave()
+    // Propagate prompt content to linked card immediately
+    const src = objects.value.find((o) => o.id === sourceId)
+    const tgtIdx = objects.value.findIndex((o) => o.id === targetId)
+    if (src?.type === 'prompt' && src.content && tgtIdx !== -1 && objects.value[tgtIdx].content !== src.content) {
+      objects.value[tgtIdx] = { ...objects.value[tgtIdx], content: src.content, dirty: true }
+      scheduleSave(targetId)
+    }
+    return link
+  }
+
+  function removeLink(id: string) {
+    links.value = links.value.filter((link) => link.id !== id)
+    persistLocalLinks()
+    scheduleLinksSave()
+  }
+
+  function startConnection(id: string) {
+    connectionStartId.value = id
+    selectedId.value = id
+  }
+
+  function finishConnection(targetId: string) {
+    if (!connectionStartId.value) return null
+    const link = addLink(connectionStartId.value, targetId)
+    connectionStartId.value = null
+    selectedId.value = targetId
+    return link
+  }
+
+  function cancelConnection() {
+    connectionStartId.value = null
+  }
+
   function setZoom(value: number) {
     zoom.value = Math.min(180, Math.max(30, value))
+  }
+
+  function reset() {
+    objects.value = []
+    links.value = []
+    selectedId.value = null
+    connectionStartId.value = null
+    activeProjectId.value = null
+    loading.value = false
+    saving.value = false
+    error.value = null
+    lastSavedAt.value = null
+    zoom.value = 86
+    saveTimers.clear()
+    if (linksSaveTimer) clearTimeout(linksSaveTimer)
+    linksSaveTimer = null
+    creatingIds.clear()
+    createPromises.clear()
+    if (import.meta.client) {
+      const toRemove: string[] = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key?.startsWith('polaris.canvas.') || key === 'polaris.activeProject') {
+          toRemove.push(key)
+        }
+      }
+      toRemove.forEach((k) => localStorage.removeItem(k))
+    }
   }
 
   function markSaved() {
@@ -245,8 +434,11 @@ export const useCanvasStore = defineStore('canvas', () => {
 
   return {
     objects,
+    links,
     selectedId,
+    connectionStartId,
     selectedObject,
+    selectedLinks,
     activeProjectId,
     loading,
     saving,
@@ -263,7 +455,14 @@ export const useCanvasStore = defineStore('canvas', () => {
     duplicateObject,
     deleteSelected,
     selectObject,
+    addLink,
+    removeLink,
+    startConnection,
+    finishConnection,
+    cancelConnection,
     saveAll,
-    setZoom
+    clearAll,
+    setZoom,
+    reset
   }
 })

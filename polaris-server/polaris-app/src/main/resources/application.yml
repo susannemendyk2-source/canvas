@@ -44,3 +44,14 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+logging:
+  level:
+    org.springframework: INFO
+    com.polaris: DEBUG
+  file:
+    name: ./polaris-server.log
+  logback:
+    rollingpolicy:
+      max-history: 3
+      max-file-size: 10MB

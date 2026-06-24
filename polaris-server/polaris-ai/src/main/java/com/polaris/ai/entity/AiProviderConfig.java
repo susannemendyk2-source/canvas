@@ -21,6 +21,8 @@ public class AiProviderConfig {
 
     private String apiKeyEnc;
 
+    private String secretKeyEnc;
+
     private String model;
 
     private Integer isActive;

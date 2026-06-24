@@ -13,5 +13,7 @@ public class SaveProviderConfigRequest {
 
     private String apiKey;
 
+    private String secretKey;
+
     private String model;
 }

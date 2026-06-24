@@ -11,6 +11,7 @@ public class ProjectDTO {
     private String cover;
     private Integer status;
     private String tags;
+    private String meta;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -30,6 +31,8 @@ public class ProjectDTO {
     public void setStatus(Integer status) { this.status = status; }
     public String getTags() { return tags; }
     public void setTags(String tags) { this.tags = tags; }
+    public String getMeta() { return meta; }
+    public void setMeta(String meta) { this.meta = meta; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

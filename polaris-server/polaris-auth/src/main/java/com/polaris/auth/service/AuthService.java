@@ -72,6 +72,8 @@ public class AuthService {
             user.getId(),
             user.getUsername(),
             user.getNickname(),
+            user.getEmail(),
+            user.getCredits(),
             roles
         );
     }
@@ -106,6 +108,8 @@ public class AuthService {
             user.getId(),
             user.getUsername(),
             user.getNickname(),
+            user.getEmail(),
+            user.getCredits(),
             roles
         );
     }
@@ -147,8 +151,26 @@ public class AuthService {
             user.getId(),
             user.getUsername(),
             user.getNickname(),
+            user.getEmail(),
+            user.getCredits(),
             roles
         );
+    }
+
+    public java.util.Map<String, Object> getUserSummary(Long userId, String username, List<String> roles) {
+        User user = userMapper.selectById(userId);
+        java.util.Map<String, Object> summary = new java.util.HashMap<>();
+        summary.put("userId", userId);
+        summary.put("username", username);
+        summary.put("roles", roles);
+        if (user != null) {
+            summary.put("nickname", user.getNickname());
+            summary.put("email", user.getEmail());
+            summary.put("credits", user.getCredits());
+            summary.put("avatar", user.getAvatar());
+            summary.put("phone", user.getPhone());
+        }
+        return summary;
     }
 
     public void logout(String token) {

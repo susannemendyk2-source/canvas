@@ -5,6 +5,8 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
+    "dev:3090": "nuxi dev --port 3090 --host 127.0.0.1",
+    "preview:3090": "nuxi preview --port 3090 --host 127.0.0.1",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"

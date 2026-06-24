@@ -17,21 +17,39 @@ public class AiChatService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final AiProviderService aiProviderService;
 
-    public AiChatService() {
+    public AiChatService(AiProviderService aiProviderService) {
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
+        this.aiProviderService = aiProviderService;
     }
 
     public ChatResponse chat(ChatRequest req) {
-        String url = (req.getBaseUrl() != null ? req.getBaseUrl() : "https://api.deepseek.com") + "/chat/completions";
+        if (req.getApiKey() == null || req.getApiKey().isBlank()) {
+            AiProviderService.ResolvedConfig rc = aiProviderService.resolveConfig(req.getUserId(), req.getModel());
+            if (rc != null) {
+                if (req.getBaseUrl() == null || req.getBaseUrl().isBlank()) req.setBaseUrl(rc.getBaseUrl());
+                if (req.getApiKey() == null || req.getApiKey().isBlank()) req.setApiKey(rc.getApiKey());
+                if (req.getModel() == null || req.getModel().isBlank()) req.setModel(rc.getModel());
+            }
+        }
+
+        String baseUrl = req.getBaseUrl();
+        if (baseUrl == null || baseUrl.isBlank()) baseUrl = "https://api.deepseek.com";
+        if (req.getApiKey() == null || req.getApiKey().isBlank()) {
+            ChatResponse r = new ChatResponse();
+            r.setContent("Error: API key not configured. Please save your Chat API settings.");
+            return r;
+        }
+        String url = baseUrl.replaceAll("/+$", "") + "/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(req.getApiKey());
 
         Map<String, Object> body = new java.util.HashMap<>();
-        body.put("model", req.getModel() != null ? req.getModel() : "deepseek-chat");
+        body.put("model", req.getModel() != null ? req.getModel() : "deepseek-v4-flash");
         body.put("messages", req.getMessages());
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);

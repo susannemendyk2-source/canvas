@@ -8,8 +8,7 @@ const projectId = route.params.id as string
 
 onMounted(() => {
   if (import.meta.client) {
-    localStorage.setItem('polaris.activeProject', projectId)
-    navigateTo('/studio')
+    window.open(`/studio?pid=${projectId}`, '_self')
   }
 })
 </script>

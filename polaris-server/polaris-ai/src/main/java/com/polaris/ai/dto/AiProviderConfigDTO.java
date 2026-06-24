@@ -11,6 +11,10 @@ public class AiProviderConfigDTO {
 
     private String baseUrl;
 
+    private String apiKey;
+
+    private String secretKey;
+
     private String model;
 
     private Integer isActive;

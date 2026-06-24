@@ -26,6 +26,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <jvmArguments>-Djdk.httpclient.allowRestrictedHeaders=host</jvmArguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>

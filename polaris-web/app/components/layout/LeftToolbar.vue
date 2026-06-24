@@ -12,6 +12,13 @@
 
     <div class="mt-auto flex flex-col items-center gap-1">
       <button
+        class="grid size-10 place-items-center rounded-lg text-white/38 transition hover:bg-red-500/15 hover:text-red-400"
+        title="清空 / Clear"
+        @click="handleClear"
+      >
+        <Trash2 class="size-4" />
+      </button>
+      <button
         class="grid size-10 place-items-center rounded-lg border border-cyan-300/20 bg-cyan-300/10 text-cyan-100"
         title="生成 / Generate"
         @click="handleGenerate"
@@ -24,16 +31,16 @@
 </template>
 
 <script setup lang="ts">
-import { MousePointer2, Move, ImagePlus, Layers3, PanelLeft, Clock3, CircleHelp, Settings, WandSparkles, BoxSelect } from 'lucide-vue-next'
+import { BoxSelect, CircleHelp, Clock3, ImagePlus, Layers3, MousePointer2, Move, PanelLeft, Settings, Trash2, WandSparkles } from 'lucide-vue-next'
 import { useCanvasStore } from '~/stores/canvasStore'
+import { useSettingsStore } from '~/stores/settingsStore'
 import { useWorkflowStore } from '~/stores/workflowStore'
 import { useWorkspaceStore } from '~/stores/workspaceStore'
-import { useSettingsStore } from '~/stores/settingsStore'
 
 const canvasStore = useCanvasStore()
-const workspaceStore = useWorkspaceStore()
 const settingsStore = useSettingsStore()
 const workflowStore = useWorkflowStore()
+const workspaceStore = useWorkspaceStore()
 
 const tools = [
   { key: 'select', icon: MousePointer2, label: '选择 / Select' },
@@ -46,11 +53,23 @@ const tools = [
   { key: 'settings', icon: Settings, label: '设置 / Settings' }
 ]
 
+function addVisiblePrompt() {
+  canvasStore.addObject({
+    type: 'prompt',
+    title: 'Prompt 提示词节点',
+    content: '从左侧工具栏添加的测试卡片。',
+    x: 180,
+    y: 160,
+    width: 360,
+    height: 220
+  })
+}
+
 function handleAction(key: string) {
   switch (key) {
     case 'add':
       if (workspaceStore.mode === 'magic') {
-        canvasStore.addObject({ type: 'prompt', title: 'Prompt 提示词航点' })
+        addVisiblePrompt()
       } else {
         workflowStore.addNode('prompt', 300, 300)
       }
@@ -73,11 +92,22 @@ function handleAction(key: string) {
   }
 }
 
+function handleClear() {
+  const msg = settingsStore.language === 'zh' ? '确定清空画布？所有卡片和连线将被删除。' : 'Clear canvas? All cards and connections will be deleted.'
+  if (window.confirm(msg)) {
+    canvasStore.clearAll()
+  }
+}
+
 function handleGenerate() {
   canvasStore.addObject({
     type: 'generated',
     title: '生成资产 / Generated asset',
-    content: 'Polaris mock 结果已投放到当前星图附近。Polaris mock result added near your current route.'
+    content: 'Polaris mock result added near your current route.',
+    x: 220,
+    y: 200,
+    width: 420,
+    height: 260
   })
 }
 </script>

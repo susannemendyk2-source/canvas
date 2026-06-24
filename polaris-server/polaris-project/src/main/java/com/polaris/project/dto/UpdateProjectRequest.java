@@ -6,6 +6,7 @@ public class UpdateProjectRequest {
     private String mode;
     private Integer status;
     private String tags;
+    private String meta;
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -17,4 +18,6 @@ public class UpdateProjectRequest {
     public void setStatus(Integer status) { this.status = status; }
     public String getTags() { return tags; }
     public void setTags(String tags) { this.tags = tags; }
+    public String getMeta() { return meta; }
+    public void setMeta(String meta) { this.meta = meta; }
 }

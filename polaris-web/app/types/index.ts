@@ -19,6 +19,13 @@ export interface CanvasObject {
   dirty?: boolean
 }
 
+export interface CanvasLink {
+  id: string
+  sourceId: string
+  targetId: string
+  label?: string
+}
+
 export interface WorkflowNodeData {
   label: string
   nodeType: NodeType

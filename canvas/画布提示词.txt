@@ -1,0 +1,444 @@
+你现在是一个顶级全栈产品架构师、AI 创作工具产品经理、企业级前端工程师、UI/UX 设计师和高级动效设计师。
+我正在使用 Codex，模型是 5.5。请你帮我从 0 创建一个高审美、高级感、企业级、可扩展的 AI 创作网站。
+
+项目目标：
+我要做一个类似 Lovart + LibTV + TapNow 的 AI 创作平台。
+它不是普通 AI 生图网站，而是一个「AI 无限画布 + AI 节点工作流画布」结合的网站。
+
+核心参考：
+
+1. Lovart 类型
+
+* 参考 Lovart 的无限画布体验
+* 用户可以在一个超大的无限画布里自由放置图片、视频、文字、提示词、生成结果、参考图、设计卡片
+* 右侧有 AI 对话/技能面板
+* 底部有轻量工具栏
+* 画布中心可以提示用户“双击开始创作 / 输入想法开始创作”
+* 支持 AI 生成结果自动回填到画布中
+* 整体感觉要像一个高级的 AI 设计工作台，而不是普通后台系统
+
+2. LibTV / TapNow 类型
+
+* 参考 LibTV 和 TapNow 的节点画布
+* 用户可以在深色点阵背景画布上创建节点
+* 节点之间可以连线
+* 节点类型包括：文本节点、提示词节点、图片节点、视频节点、音频节点、脚本节点、分镜节点、图片生成节点、图片编辑节点、文生视频节点、图生视频节点、视频合成节点、输出节点
+* 节点要有实时状态：待运行、运行中、成功、失败
+* 节点运行时要有进度条、loading、微动效
+* 节点结果可以预览，例如图片缩略图、视频封面、音频波形、文本摘要
+* 支持用户从左侧工具栏添加节点，或者双击画布弹出添加节点菜单
+* 支持拖动、缩放、框选、多选、删除、复制、撤销、重做
+
+必须参考的开源项目：
+
+一、Lovart 无限画布方向：
+
+* 11cafe/jaaz
+  参考它的 open-source Canva AI alternative / multimodal creative assistant / AI canvas 产品方向。
+* fal-ai-community/infinite-kanvas
+  参考它的 infinite canvas、AI image editor、React Konva、拖拽图片、AI 结果回填、IndexedDB 保存等思路。
+* SparkSylva/Infinite-Canvas-AI-Omnigen
+  参考它在 infinite-kanvas 基础上加入多模型 AI 和视频处理的方式。
+* tldraw/tldraw
+  参考它的 Infinite Canvas SDK、自定义 shape、tools、bindings、toolbar、camera controls。
+
+二、LibTV / TapNow 节点画布方向：
+
+* chapterv/Tapnow-Studio-PP
+  参考它的中文 AI 工作流、无限缩放画布、节点连线、实时预览、多模态协同。
+* shrimbly/node-banana
+  参考它的 node-based AI media generation、typed handles、workflow JSON、图片/视频 AI 工作流。
+* SankaiAI/TwitCanva-Video-Workflow
+  参考它的 AI canvas、图生视频、文生视频、分镜、镜头角度控制、视频工作流。
+* SamurAIGPT/Vibe-Workflow
+  参考它的 open-source node-based AI workflow builder、image/video generation pipeline。
+* nodetool-ai/nodetool
+  参考它的本地 AI workspace、bring your own keys、多模型节点画布。
+* comfy-org/comfyui
+  不直接照搬 ComfyUI 的复杂 UI，但参考它的节点执行逻辑和 workflow 思想。
+
+三、底层技术库：
+
+* React Flow / xyflow：用于节点画布、连线、handles、mini map、zoom、workflow editor。
+* tldraw 或 React Konva：用于 Lovart 类型无限画布。
+* Zustand：用于全局状态管理。
+* TanStack Query：用于任务、生成记录、模型列表、项目列表的数据请求。
+* Zod：用于 schema 校验。
+* Framer Motion：用于微交互和高级动效。
+* Tailwind CSS：用于样式系统。
+* Radix UI Themes：用于企业级组件体系。
+* Circum Icons：用于简洁高级的图标风格。
+* 21st.dev Community Components：用于参考高级组件、背景、按钮、卡片、AI Chat 组件。
+* React Bits Aurora：用于首页和空状态的高级动态背景。
+* Variant.com：参考它“输入想法后不断展示高级设计方案”的交互灵感。
+
+技术栈要求：
+
+请使用：
+
+* Next.js App Router
+* TypeScript
+* Tailwind CSS
+* Radix UI Themes
+* React Flow / xyflow
+* tldraw 或 React Konva，优先 tldraw；如果某些图片自由编辑交互 tldraw 不方便，可以封装 CanvasEngine 接口，后续可替换为 React Konva
+* Zustand
+* TanStack Query
+* Framer Motion
+* Lucide 或 Circum Icons 风格图标，如可以直接使用 Circum Icons 更好
+* localStorage / IndexedDB 做本地项目保存
+* Mock API 层，先不要真的接付费 AI API，但要设计好可扩展 Provider 架构
+
+请创建一个完整的企业级项目结构，不要只做一个简单 demo。
+请先给出项目架构规划，然后直接生成代码文件。
+
+网站名称：
+暂定为「VisionCanvas AI」或者「NovaCanvas Studio」。
+请你选择一个更高级、更国际化、更有 AI 创作平台气质的名字，并在项目里使用。
+
+产品定位：
+一个面向创作者、设计师、短视频团队、电商营销团队、AI 视频创作者的多模态 AI 创作工作台。
+用户可以在同一个平台完成：灵感收集、提示词创作、图片生成、图片编辑、分镜设计、图生视频、文生视频、音频生成、视频合成、作品管理。
+
+页面结构要求：
+
+1. Landing Page 首页
+   要求高级、简洁、有科技感，但不要廉价炫酷。
+   参考 Variant.com 的高级感和 React Bits Aurora 的动态背景。
+   首页包含：
+
+* 顶部导航：Logo、Product、Canvas、Workflow、Templates、Pricing、Community、Login、Get Started
+* Hero 区域：一句强有力的 slogan，例如 “Create images, videos and stories on an infinite AI canvas.”
+* 副标题：强调无限画布、节点工作流、多模态 AI、团队协作
+* CTA：Start Creating、View Workflow Demo
+* Aurora 背景，黑色/深灰高级渐变
+* 展示一张产品大图模拟区：左边是无限画布，右边是节点工作流
+* 功能区：Infinite Canvas、Node Workflow、AI Video Pipeline、Prompt-to-Storyboard、Asset Library、Team-ready
+* 使用场景区：短视频、广告、电商、AI 动画、品牌视觉、社媒内容
+* 底部 Footer
+
+2. App Workspace 主工作台
+   路径：/studio
+   这是核心页面。
+   布局要求：
+
+* 顶部栏：Logo、项目名、保存状态、积分/额度、Share、Export、用户头像
+* 左侧垂直工具栏：选择、移动、添加、素材、模板、历史、帮助、设置
+* 中间主区域：画布区域
+* 右侧 AI Agent 面板：聊天输入、技能按钮、模型选择、生成历史
+* 底部悬浮工具栏：缩放、画布模式切换、撤销、重做、网格、适配屏幕
+* 支持两种模式切换：
+  A. Magic Canvas 无限画布模式
+  B. Workflow Nodes 节点画布模式
+
+3. Magic Canvas 无限画布模式
+   参考 Lovart 图 1。
+   要求：
+
+* 浅色/深色两套主题，但默认深色高级主题
+* 空画布中心显示：“输入你的想法开始创作，或按 C 开始对话”
+* 支持添加以下画布对象：
+
+  * TextCard
+  * PromptCard
+  * ImageCard
+  * VideoCard
+  * AudioCard
+  * ReferenceBoard
+  * GeneratedAssetCard
+  * MoodboardCard
+* 每个卡片支持：
+
+  * 拖动
+  * 选择
+  * resize
+  * 删除
+  * duplicate
+  * rename
+  * 加入生成队列
+  * 发送到节点工作流
+* 图片卡片要有高级玻璃拟态边框和 hover 操作按钮
+* 视频卡片要有播放图标、时长标签、封面预览
+* PromptCard 要支持正向提示词、负向提示词、风格标签、镜头语言、比例、模型
+* 生成结果要以卡片形式出现在画布附近，而不是弹窗里
+
+4. Workflow Nodes 节点画布模式
+   参考 LibTV 图 2、TapNow 图 3、节点连接图 4。
+   要求：
+
+* 使用 React Flow / xyflow 实现
+* 深色点阵网格背景
+* 节点卡片要有高级黑灰色玻璃质感
+* 节点之间使用柔和曲线连接
+* 节点 handle 要区分类型：
+
+  * text
+  * image
+  * video
+  * audio
+  * json
+* 不同类型 handle 用不同颜色，但颜色要克制高级
+* 节点顶部显示 icon + 节点名称 + 状态
+* 节点内部显示参数区域、预览区域、操作按钮
+* 右键或双击画布弹出添加节点菜单
+* 节点菜单分类：
+
+  * Input：文本、图片、视频、音频、参考图
+  * Generate：文生图、图生图、文生视频、图生视频、音频生成
+  * Edit：局部重绘、扩图、抠图、风格化、放大修复
+  * Story：脚本、分镜、镜头、角色、一致性设定
+  * Output：导出图片、导出视频、发布、保存到素材库
+* 预置一个默认 workflow：
+  文本提示词节点 → 图片生成节点 → 图生视频节点 → 输出视频节点
+* 节点运行时模拟 AI 任务：
+
+  * 点击 Run Workflow
+  * 节点依次变成 running
+  * 显示进度
+  * 最后生成 mock 结果
+  * 结果显示在节点内，并同步进入右侧历史记录
+
+5. AI Agent 右侧面板
+   参考 Lovart 的右侧聊天栏。
+   要求：
+
+* 标题：AI Creative Agent
+* 输入框 placeholder：Start with an idea, or type @ to mention assets
+* 支持技能 chip：
+
+  * 一键生成短视频
+  * 图片生成海报
+  * 图生视频
+  * 角色一致性
+  * 商品广告
+  * 分镜脚本
+  * AI 抠图
+  * 风格迁移
+* 消息气泡要高级简洁
+* AI 回复可以生成建议卡片：
+
+  * 推荐创建哪些节点
+  * 推荐使用什么比例
+  * 推荐镜头语言
+  * 推荐视频风格
+* 支持“Apply to Canvas”和“Create Workflow”按钮
+
+6. 用户体验优化
+   请参考真实 AI 创作网站用户常见痛点，并在产品里体现解决方案：
+
+* 用户不知道从哪里开始：提供模板、技能 chips、空状态引导
+* 节点太复杂：提供“简单模式 / 专家模式”
+* 生成过程不可控：每个节点显示输入、参数、输出、耗时、错误提示
+* 结果难管理：加入素材库、历史记录、收藏、版本对比
+* 提示词难写：提供 Prompt Enhancer 和风格标签
+* 视频流程断裂：加入脚本 → 分镜 → 图片 → 视频 → 合成的默认链路
+* 成本不可控：顶部显示积分/额度，任务运行前显示预计消耗
+* 画布混乱：加入自动整理、分组、锁定、搜索节点/素材
+* 不够高效：支持快捷键、右键菜单、拖拽上传、批量运行
+* 不够有趣：加入轻量有趣的微文案和动效，但不要低级搞笑，不要破坏高级感
+
+7. 设计风格要求
+   整体要高级、国际化、企业级、适合给真实用户使用。
+   不要做成普通后台，不要像模板站，不要廉价渐变。
+   视觉关键词：
+
+* deep black
+* soft glass
+* premium AI studio
+* cinematic glow
+* subtle aurora
+* dotted grid
+* floating panels
+* soft shadows
+* elegant motion
+* clean typography
+* professional creator tool
+
+颜色建议：
+
+* 背景：#050608 / #090A0F / #0F1117
+* 面板：rgba(255,255,255,0.06)
+* 边框：rgba(255,255,255,0.10)
+* 主强调色：violet / cyan / electric blue，但要克制
+* 成功色、错误色、运行中色要统一在 design tokens 里
+* 支持 light/dark mode，但 dark mode 优先完成
+
+字体要求：
+
+* 使用现代无衬线字体
+* 中文也要美观
+* 字号层级清晰
+* UI 文案简洁
+
+8. 组件要求
+   请建立 components 目录：
+
+* components/layout/AppShell.tsx
+* components/layout/TopBar.tsx
+* components/layout/LeftToolbar.tsx
+* components/layout/BottomToolbar.tsx
+* components/agent/AgentPanel.tsx
+* components/agent/SkillChips.tsx
+* components/canvas/MagicCanvas.tsx
+* components/canvas/CanvasCard.tsx
+* components/canvas/ImageCard.tsx
+* components/canvas/VideoCard.tsx
+* components/canvas/PromptCard.tsx
+* components/workflow/WorkflowCanvas.tsx
+* components/workflow/NodeMenu.tsx
+* components/workflow/nodes/TextNode.tsx
+* components/workflow/nodes/ImageNode.tsx
+* components/workflow/nodes/VideoNode.tsx
+* components/workflow/nodes/PromptNode.tsx
+* components/workflow/nodes/ImageGenerateNode.tsx
+* components/workflow/nodes/ImageToVideoNode.tsx
+* components/workflow/nodes/OutputNode.tsx
+* components/assets/AssetLibrary.tsx
+* components/history/GenerationHistory.tsx
+* components/ui/GlassPanel.tsx
+* components/ui/FloatingButton.tsx
+* components/ui/StatusBadge.tsx
+* components/ui/ModelSelector.tsx
+* components/ui/EmptyState.tsx
+
+9. 状态管理要求
+   请建立 stores：
+
+* useWorkspaceStore
+* useCanvasStore
+* useWorkflowStore
+* useAgentStore
+* useAssetStore
+
+状态至少包括：
+
+* 当前项目
+* 当前模式 magic-canvas / workflow-nodes
+* 画布对象列表
+* 节点列表
+* 连线列表
+* 生成任务列表
+* 素材库
+* 历史记录
+* 选中对象
+* 当前缩放
+* 当前主题
+
+10. 数据模型要求
+    请建立 types：
+
+* CanvasObject
+* CanvasCardType
+* WorkflowNodeType
+* WorkflowEdge
+* Asset
+* GenerationTask
+* AIProvider
+* ModelConfig
+* AgentMessage
+* Project
+
+11. AI Provider 架构
+    先使用 mock provider，但结构要可扩展。
+    请建立 lib/ai/providers：
+
+* mockProvider.ts
+* comfyProvider.ts placeholder
+* falProvider.ts placeholder
+* replicateProvider.ts placeholder
+* openaiProvider.ts placeholder
+* klingProvider.ts placeholder
+* veoProvider.ts placeholder
+* minimaxProvider.ts placeholder
+
+每个 provider 统一接口：
+
+* generateImage(input)
+* editImage(input)
+* generateVideo(input)
+* generateAudio(input)
+* enhancePrompt(input)
+* estimateCost(input)
+
+不要把真实 API key 写死。
+请使用环境变量示例 .env.example。
+在 UI 里做“Provider 未配置”的优雅提示。
+
+12. 交互细节
+    必须实现：
+
+* 模式切换动画
+* 节点拖动和连线
+* 节点添加菜单
+* mock workflow 运行
+* 右侧聊天发送消息
+* AI 生成建议卡片
+* 画布对象添加
+* 图片/视频/Prompt 卡片展示
+* 本地保存项目
+* 空状态引导
+* 快捷键：
+
+  * C 打开 AI 对话
+  * N 添加节点
+  * Space 拖动画布
+  * Delete 删除选中
+  * Cmd/Ctrl + Z 撤销
+  * Cmd/Ctrl + S 保存
+  * 1 切换无限画布
+  * 2 切换节点画布
+
+13. 首页审美
+    首页要有高级动态背景：
+
+* 可以参考 React Bits Aurora
+* 不要过度占性能
+* 要有渐变光晕
+* hero 产品预览图可以用纯前端模拟，不需要真实截图
+* 鼠标 hover 时卡片有轻微 3D tilt / glow
+* 按钮要高级，不要普通蓝色按钮
+* 使用 Radix UI Themes 的组件风格，并结合 Tailwind 自定义玻璃拟态
+
+14. 质量要求
+    请你像做真实 SaaS 产品一样完成：
+
+* 代码结构清晰
+* 类型完整
+* 组件可复用
+* UI 统一
+* 响应式适配
+* 错误状态
+* loading 状态
+* 空状态
+* mock 数据
+* 可运行
+* 不要留下大量 TODO
+* 不要只生成静态页面
+* 不要只做普通首页，要完成 /studio 核心工作台
+
+15. 输出方式
+    请你按以下步骤执行：
+
+第一步：先检查当前项目环境。如果没有项目，请创建 Next.js + TypeScript + Tailwind 项目。
+第二步：安装必要依赖。
+第三步：创建完整目录结构。
+第四步：先搭建 design system，包括颜色、字体、玻璃面板、按钮、状态徽章。
+第五步：完成首页。
+第六步：完成 /studio 主工作台布局。
+第七步：完成 Magic Canvas 无限画布模式。
+第八步：完成 Workflow Nodes 节点画布模式。
+第九步：完成 AI Agent 右侧面板。
+第十步：完成 mock AI 生成和 workflow 运行逻辑。
+第十一步：检查 TypeScript、lint、运行错误并修复。
+第十二步：给我项目完成报告，包括如何启动、已完成功能、后续可以接哪些真实 AI API。
+
+重要要求：
+
+* 审美必须高级。
+* 交互必须像真实产品。
+* 不要生成廉价模板。
+* 不要只给说明，要直接写代码。
+* 不要一次偷懒生成很少文件。
+* 如果代码太多，请分批完成，但每一批都必须保证项目可运行。
+* 你可以借鉴 Lovart、LibTV、TapNow 的产品结构，但不要直接复制它们的品牌、Logo、文案和具体 UI。
+* 请做一个原创的高级 AI 创作平台。

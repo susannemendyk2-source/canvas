@@ -14,6 +14,8 @@ public class ChatRequest {
 
     private List<ChatMessage> messages;
 
+    private Long userId;
+
     @Data
     public static class ChatMessage {
 

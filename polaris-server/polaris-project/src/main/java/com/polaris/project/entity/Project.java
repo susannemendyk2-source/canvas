@@ -20,6 +20,7 @@ public class Project {
     private Integer isPublic = 0;
     private Integer status = 1;
     private String tags;
+    private String meta;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

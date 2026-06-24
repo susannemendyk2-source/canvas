@@ -10,7 +10,6 @@ import com.polaris.common.constant.ApiConstants;
 import com.polaris.common.response.R;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.HashMap;
 import java.util.Map;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -56,11 +55,7 @@ public class AuthController {
     public R<Map<String, Object>> me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JwtAuthenticationToken jwtAuth) {
-            Map<String, Object> userInfo = new HashMap<>();
-            userInfo.put("userId", jwtAuth.getUserId());
-            userInfo.put("username", jwtAuth.getUsername());
-            userInfo.put("roles", jwtAuth.getRoles());
-            return R.success(userInfo);
+            return R.success(authService.getUserSummary(jwtAuth.getUserId(), jwtAuth.getUsername(), jwtAuth.getRoles()));
         }
         return R.failed(com.polaris.common.enums.ResultCode.UNAUTHORIZED);
     }

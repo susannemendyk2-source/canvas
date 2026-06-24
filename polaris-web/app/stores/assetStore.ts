@@ -13,6 +13,10 @@ export const useAssetStore = defineStore('asset', () => {
     history.value.unshift(item)
   }
 
+  function removeHistory(id: string) {
+    history.value = history.value.filter(h => h.id !== id)
+  }
+
   function updateHistoryStatus(id: string, status: HistoryItem['status'], progress?: number) {
     const item = history.value.find(h => h.id === id)
     if (item) {
@@ -30,5 +34,5 @@ export const useAssetStore = defineStore('asset', () => {
     if (item) item.favorite = !item.favorite
   }
 
-  return { history, assets, historyCount, assetCount, addHistory, updateHistoryStatus, addAsset, toggleFavorite }
+  return { history, assets, historyCount, assetCount, addHistory, removeHistory, updateHistoryStatus, addAsset, toggleFavorite }
 })
