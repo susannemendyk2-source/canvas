@@ -37,6 +37,7 @@ import { ref } from 'vue'
 import { Sparkles, WandSparkles } from 'lucide-vue-next'
 import { aiService, applyApiConfig, readApiConfig } from '~/services/aiService'
 import { useSettingsStore } from '~/stores/settingsStore'
+import { buildSeedancePromptOptimizerSystemPrompt } from '~/utils/seedancePrompt'
 
 const props = defineProps<{
   content?: string
@@ -62,7 +63,7 @@ async function handlePolish() {
       messages: [
         {
           role: 'system',
-          content: `You are a professional prompt engineer. Polish and expand the following prompt to make it more detailed and effective for AI image/video generation. Keep the core meaning but add visual details, style cues, and technical parameters. Reply in ${targetLang}. Only return the polished prompt, no explanation.`
+          content: buildSeedancePromptOptimizerSystemPrompt(targetLang)
         },
         { role: 'user', content: props.content }
       ]

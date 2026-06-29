@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import type { NodeType, StatusType } from '~/types'
 import { uid } from '~/utils'
 import { aiService, applyApiConfig } from '~/services/aiService'
+import { buildSeedancePromptOptimizerSystemPrompt } from '~/utils/seedancePrompt'
 
 interface WFNode {
   id: string
@@ -228,7 +229,7 @@ export const useWorkflowStore = defineStore('workflow', () => {
             node.data.progress = 30
             const res: any = await aiService.promptEnhance(applyApiConfig('chat', {
               messages: [
-                { role: 'system', content: 'You are a professional prompt engineer. Polish and expand the following prompt to make it more detailed and effective for AI image/video generation. Keep the core meaning but add visual details, style cues, and technical parameters. Reply in the same language as the input. Only return the polished prompt, no explanation.' },
+                { role: 'system', content: buildSeedancePromptOptimizerSystemPrompt('the same language as the user input') },
                 { role: 'user', content: inputText }
               ]
             }))
