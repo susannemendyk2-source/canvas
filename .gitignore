@@ -1,6 +1,5 @@
 node_modules/
 .nuxt/
-.output/
 dist/
 **/target/
 *.jar
@@ -9,3 +8,6 @@ dist/
 .idea/
 *.iml
 .DS_Store
+
+# Build outputs (force-added for deployment artifacts)
+.output/server/node_modules/
