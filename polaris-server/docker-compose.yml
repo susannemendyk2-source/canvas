@@ -10,17 +10,19 @@ services:
       MYSQL_USER: polaris
       MYSQL_PASSWORD: polaris123
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: always
 
   redis:
     image: redis:7-alpine
     container_name: polaris-redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
+    restart: always
 
   minio:
     image: minio/minio:latest
@@ -29,11 +31,12 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+    restart: always
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -42,8 +45,9 @@ services:
       RABBITMQ_DEFAULT_USER: polaris
       RABBITMQ_DEFAULT_PASS: polaris123
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    restart: always
 
 volumes:
   mysql_data:
