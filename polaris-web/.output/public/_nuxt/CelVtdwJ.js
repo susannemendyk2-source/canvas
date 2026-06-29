@@ -1,0 +1,1 @@
+import{g as o,H as t,k as n,c as s,o as a}from"./BRS0olsR.js";const i=o({__name:"[id]",setup(r){const e=t().params.id;return n(()=>{window.open(`/studio?pid=${e}`,"_self")}),(p,d)=>(a(),s("div"))}});export{i as default};
