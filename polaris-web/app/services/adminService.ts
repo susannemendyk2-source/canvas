@@ -10,5 +10,7 @@ export const adminService = {
   reviewProject: (id: number, status: number) => api.put(`/api/admin/projects/${id}/status`, { status }),
   publishTemplate: (id: number) => api.post('/api/admin/templates', { projectId: id }),
   statsCredits: () => api.get('/api/admin/stats/credits'),
-  logs: (params: any) => api.get('/api/admin/logs', { params })
+  logs: (params: any) => api.get('/api/admin/logs', { params }),
+  getUserProviders: (userId: number) => api.get(`/api/admin/users/${userId}/providers`),
+  saveUserProvider: (userId: number, data: any) => api.put(`/api/admin/users/${userId}/providers`, data)
 }

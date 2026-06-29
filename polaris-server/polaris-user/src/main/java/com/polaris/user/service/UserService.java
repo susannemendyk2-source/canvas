@@ -13,7 +13,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -87,7 +92,27 @@ public class UserService {
     }
 
     public String uploadAvatar(Long id, MultipartFile file) {
-        String url = "/avatars/" + id + "/" + file.getOriginalFilename();
+        if (file.isEmpty()) {
+            throw new RuntimeException("File is empty");
+        }
+        String originalName = file.getOriginalFilename();
+        String ext = "";
+        if (originalName != null && originalName.contains(".")) {
+            ext = originalName.substring(originalName.lastIndexOf("."));
+        }
+        String filename = UUID.randomUUID().toString() + ext;
+        String dir = "uploads/avatars/" + id;
+        try {
+            Path dirPath = Paths.get(dir);
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
+            }
+            Path filePath = dirPath.resolve(filename);
+            file.transferTo(filePath.toFile());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save avatar file", e);
+        }
+        String url = "/" + dir + "/" + filename;
         User user = new User();
         user.setId(id);
         user.setAvatar(url);

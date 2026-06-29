@@ -64,6 +64,9 @@
                   <button class="rounded-md border border-white/8 bg-white/6 px-2 py-1 text-xs text-white/62 hover:text-white" @click="openCreditDialog(user)">
                     {{ t('调整积分', 'Credits') }}
                   </button>
+                  <button class="rounded-md border border-white/8 bg-white/6 px-2 py-1 text-xs text-white/62 hover:text-white" @click="openApiDialog(user)">
+                    <KeyRound class="mr-1 inline size-3" />API
+                  </button>
                 </div>
               </td>
             </tr>
@@ -86,13 +89,62 @@
         </div>
       </div>
     </Teleport>
+
+    <Teleport to="body">
+      <div v-if="apiDialog.user" class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" @click.self="apiDialog.user = null">
+        <div class="w-full max-w-lg rounded-lg border border-white/10 bg-[#10131a] p-5 shadow-glass">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-base font-semibold text-white">{{ t('API 配置', 'API Config') }} — {{ apiDialog.user?.username }}</h2>
+            <button class="grid size-8 place-items-center rounded-lg border border-white/8 text-white/45 hover:bg-white/8 hover:text-white" @click="apiDialog.user = null">
+              <X class="size-4" />
+            </button>
+          </div>
+
+          <div class="mb-4 flex gap-1 rounded-lg bg-black/20 p-1">
+            <button v-for="tab in apiTabs" :key="tab.key" class="flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition"
+              :class="apiActiveTab === tab.key ? 'bg-cyan-500/12 text-cyan-100 ring-1 ring-cyan-400/30' : 'text-white/55 hover:text-white/80'"
+              @click="apiActiveTab = tab.key">
+              {{ tab.label }}
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <label class="block">
+              <span class="mb-1 block text-xs text-white/55">Base URL</span>
+              <input v-model="apiForm.baseUrl" class="h-9 w-full rounded-md border border-white/10 bg-black/40 px-3 text-sm text-white/80 outline-none focus:border-cyan-300/50" />
+            </label>
+            <label class="block">
+              <span class="mb-1 block text-xs text-white/55">Model</span>
+              <input v-model="apiForm.model" class="h-9 w-full rounded-md border border-white/10 bg-black/40 px-3 text-sm text-white/80 outline-none focus:border-cyan-300/50" />
+            </label>
+            <label class="block">
+              <span class="mb-1 block text-xs text-white/55">API Key</span>
+              <div class="relative">
+                <input v-model="apiForm.apiKey" :type="apiShowKey ? 'text' : 'password'" class="h-9 w-full rounded-md border border-white/10 bg-black/40 px-3 pr-9 text-sm text-white/80 outline-none focus:border-cyan-300/50" />
+                <button class="absolute right-2 top-1/2 -translate-y-1/2 text-white/38 hover:text-white/72" @click="apiShowKey = !apiShowKey">
+                  <component :is="apiShowKey ? EyeOff : Eye" class="size-3.5" />
+                </button>
+              </div>
+            </label>
+          </div>
+
+          <div class="mt-5 flex items-center gap-3 border-t border-white/10 pt-4">
+            <button class="h-9 rounded-lg bg-cyan-100 px-4 text-xs font-medium text-[#061018] transition hover:bg-white" @click="saveApiConfig">
+              <Save class="mr-1.5 inline size-3.5" />{{ t('保存', 'Save') }}
+            </button>
+            <span v-if="apiMsg" class="text-xs" :class="apiMsgError ? 'text-red-400' : 'text-emerald-300'">{{ apiMsg }}</span>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </main>
 </template>
 
 <script setup lang="ts">
-import { Search } from 'lucide-vue-next'
+import { Eye, EyeOff, KeyRound, Save, Search, X } from 'lucide-vue-next'
 import { adminService } from '~/services/adminService'
 import { useSettingsStore } from '~/stores/settingsStore'
+import { providerKeyFor } from '~/services/aiService'
 
 interface AdminUser {
   id: number
@@ -175,5 +227,71 @@ async function submitCredits() {
   } catch {}
   creditDialog.user.credits = Number(creditDialog.user.credits || 0) + amount
   closeCreditDialog()
+}
+
+// ========== API Config Dialog ==========
+const apiDialog = reactive<{ user: AdminUser | null }>({ user: null })
+const apiActiveTab = ref<'chat' | 'image' | 'video'>('chat')
+const apiShowKey = ref(false)
+const apiMsg = ref('')
+const apiMsgError = ref(false)
+const apiForm = reactive({ provider: '', baseUrl: '', apiKey: '', model: '' })
+
+const apiTabs = computed(() => [
+  { key: 'chat', label: t('Chat', 'Chat') },
+  { key: 'image', label: t('图像', 'Image') },
+  { key: 'video', label: t('视频', 'Video') },
+])
+
+function openApiDialog(user: AdminUser) {
+  apiDialog.user = user
+  apiMsg.value = ''
+  apiForm.provider = ''
+  apiForm.baseUrl = ''
+  apiForm.apiKey = ''
+  apiForm.model = ''
+  apiActiveTab.value = 'chat'
+  loadUserProviders(user.id)
+}
+
+async function loadUserProviders(userId: number) {
+  try {
+    const res: any = await adminService.getUserProviders(userId)
+    const list = Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : []
+    const active = apiActiveTab.value
+    const key = active === 'chat' ? 'chat' : active === 'image' ? 'image-openai' : 'video-default'
+    const found = list.find((p: any) => p.provider === key || p.provider?.startsWith(active === 'image' ? 'image-' : 'video-'))
+    if (found) {
+      apiForm.baseUrl = found.baseUrl || ''
+      apiForm.apiKey = found.apiKey || ''
+      apiForm.model = found.model || ''
+    }
+  } catch {}
+}
+
+watch(apiActiveTab, () => {
+  apiMsg.value = ''
+  if (apiDialog.user) loadUserProviders(apiDialog.user.id)
+})
+
+async function saveApiConfig() {
+  const user = apiDialog.user
+  if (!user) return
+  const active = apiActiveTab.value
+  const dbProvider = active === 'chat' ? 'chat' : providerKeyFor(active, apiForm.provider || 'openai')
+  apiMsg.value = ''
+  try {
+    await adminService.saveUserProvider(user.id, {
+      provider: dbProvider,
+      baseUrl: apiForm.baseUrl,
+      apiKey: apiForm.apiKey,
+      model: apiForm.model,
+    })
+    apiMsg.value = t('已保存', 'Saved')
+    apiMsgError.value = false
+  } catch (err: any) {
+    apiMsg.value = err?.response?.data?.message || err?.message || t('保存失败', 'Save failed')
+    apiMsgError.value = true
+  }
 }
 </script>

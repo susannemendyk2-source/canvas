@@ -1,10 +1,10 @@
 <template>
   <div class="absolute bottom-5 left-1/2 z-40 -translate-x-1/2 rounded-xl border border-cyan-100/12 bg-black/60 p-2 shadow-glass backdrop-blur-xl">
     <div class="flex items-center gap-1">
-      <FloatingButton title="撤销 / Undo">
+      <FloatingButton title="撤销 / Undo" :disabled="!canUndo" @click="canvasStore.undo()">
         <Undo2 class="size-3.5" />
       </FloatingButton>
-      <FloatingButton title="重做 / Redo">
+      <FloatingButton title="重做 / Redo" :disabled="!canRedo" @click="canvasStore.redo()">
         <Redo2 class="size-3.5" />
       </FloatingButton>
 
@@ -47,6 +47,9 @@ import { useCanvasStore } from '~/stores/canvasStore'
 
 const workspaceStore = useWorkspaceStore()
 const canvasStore = useCanvasStore()
+
+const canUndo = computed(() => canvasStore.historyIndex > 0)
+const canRedo = computed(() => canvasStore.historyIndex < canvasStore.historyStack.length - 1)
 
 function zoomIn() {
   canvasStore.setZoom(canvasStore.zoom + 10)

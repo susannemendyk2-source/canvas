@@ -12,6 +12,22 @@
 
     <div class="mt-auto flex flex-col items-center gap-1">
       <button
+        class="grid size-10 place-items-center rounded-lg text-white/58 transition hover:bg-cyan-100/10 hover:text-cyan-50 disabled:opacity-40"
+        title="保存 / Save"
+        :disabled="canvasStore.saving"
+        @click="handleSave"
+      >
+        <span v-if="canvasStore.saving" class="inline-block size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+        <Save v-else class="size-4" />
+      </button>
+      <button
+        class="grid size-10 place-items-center rounded-lg text-white/38 transition hover:bg-cyan-100/10 hover:text-cyan-50"
+        title="新建画布 / New Canvas"
+        @click="handleNewCanvas"
+      >
+        <Plus class="size-4" />
+      </button>
+      <button
         class="grid size-10 place-items-center rounded-lg text-white/38 transition hover:bg-red-500/15 hover:text-red-400"
         title="清空 / Clear"
         @click="handleClear"
@@ -27,20 +43,28 @@
       </button>
       <BoxSelect class="size-4 text-white/25" />
     </div>
+
+    <Teleport to="body">
+      <div v-if="toastMsg" class="fixed bottom-6 left-20 z-[999] rounded-lg px-3 py-2 text-xs shadow-lg backdrop-blur" :class="toastError ? 'bg-red-500/90 text-white' : 'bg-emerald-500/90 text-white'">
+        {{ toastMsg }}
+      </div>
+    </Teleport>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { BoxSelect, CircleHelp, Clock3, ImagePlus, Layers3, MousePointer2, Move, PanelLeft, Settings, Trash2, WandSparkles } from 'lucide-vue-next'
+import { BoxSelect, CircleHelp, Clock3, ImagePlus, Layers3, MousePointer2, Move, PanelLeft, Plus, Save, Settings, Trash2, WandSparkles } from 'lucide-vue-next'
 import { useCanvasStore } from '~/stores/canvasStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { useWorkflowStore } from '~/stores/workflowStore'
 import { useWorkspaceStore } from '~/stores/workspaceStore'
+import { projectService } from '~/services/projectService'
 
 const canvasStore = useCanvasStore()
 const settingsStore = useSettingsStore()
 const workflowStore = useWorkflowStore()
 const workspaceStore = useWorkspaceStore()
+const t = (zh: string, en: string) => settingsStore.t(zh, en)
 
 const tools = [
   { key: 'select', icon: MousePointer2, label: '选择 / Select' },
@@ -97,6 +121,42 @@ function handleClear() {
   if (window.confirm(msg)) {
     canvasStore.clearAll()
   }
+}
+
+async function handleSave() {
+  await canvasStore.saveAll()
+  if (canvasStore.error) {
+    showToast(t('保存失败', 'Save failed'), true)
+  } else {
+    showToast(t('已保存', 'Saved'), false)
+  }
+}
+
+const toastMsg = ref('')
+const toastError = ref(false)
+let toastTimer: ReturnType<typeof setTimeout> | null = null
+
+function showToast(msg: string, error: boolean) {
+  toastMsg.value = msg
+  toastError.value = error
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => { toastMsg.value = '' }, 2000)
+}
+
+async function handleNewCanvas() {
+  canvasStore.clearAll()
+  try {
+    const project: any = await projectService.create({
+      name: '新画布',
+      mode: 'magic-canvas',
+      description: ''
+    })
+    const id = project.id || project?.data?.id
+    if (id) {
+      if (import.meta.client) localStorage.setItem('polaris.activeProject', String(id))
+      navigateTo(`/studio?pid=${id}`)
+    }
+  } catch {}
 }
 
 function handleGenerate() {

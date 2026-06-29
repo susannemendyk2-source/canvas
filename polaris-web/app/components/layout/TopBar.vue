@@ -6,12 +6,13 @@
           <Compass class="size-5 text-studio-cyan" />
           <span class="text-sm font-semibold text-white">Polaris</span>
         </button>
-        <span class="truncate text-sm text-white/45">{{ workspaceStore.projectName }}</span>
-        <FloatingButton :title="t('保存', 'Save')" :disabled="canvasStore.saving" @click="handleSave">
-          <Save v-if="!canvasStore.saving" class="size-3.5" />
-          <span v-else class="inline-block size-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-        </FloatingButton>
-        <span v-if="lastSaved" class="animate-fade-in text-[11px]" :class="lastSavedError ? 'text-red-400' : 'text-cyan-100/60'">{{ lastSaved }}</span>
+        <div v-if="!renaming" class="group flex items-center gap-1.5">
+          <span class="truncate text-sm text-white/45 cursor-pointer" @dblclick="startRename">{{ workspaceStore.projectName }}</span>
+          <Pencil class="size-3 text-white/25 opacity-0 transition group-hover:opacity-100" />
+        </div>
+        <div v-else class="flex items-center gap-1">
+          <input ref="renameInput" v-model="renameValue" class="h-7 w-40 rounded-md border border-cyan-400/40 bg-black/60 px-2 text-sm text-white outline-none" @keydown.enter="doRename" @keydown.escape="renaming = false" @blur="doRename" />
+        </div>
       </div>
 
       <div class="flex items-center gap-1 rounded-lg bg-black/30 p-0.5">
@@ -36,9 +37,6 @@
           <Sun v-if="settingsStore.theme === 'light'" class="size-3.5" />
           <Moon v-else class="size-3.5" />
         </FloatingButton>
-        <FloatingButton :title="t('设置', 'Settings')" @click="navigateTo('/settings')">
-          <Settings class="size-3.5" />
-        </FloatingButton>
         <FloatingButton :title="t('分享', 'Share')">
           <Share2 class="size-3.5" />
         </FloatingButton>
@@ -53,8 +51,9 @@
         </FloatingButton>
 
         <div ref="avatarRef" class="relative">
-          <button class="size-8 rounded-full bg-gradient-to-br from-studio-cyan to-studio-violet text-xs font-bold text-white" @click.stop="toggleMenu">
-            {{ userInitial }}
+          <button class="size-8 overflow-hidden rounded-full bg-gradient-to-br from-studio-cyan to-studio-violet text-xs font-bold text-white" @click.stop="toggleMenu">
+            <img v-if="authStore.user?.avatar" :src="authStore.user.avatar" class="size-full object-cover" />
+            <span v-else>{{ userInitial }}</span>
           </button>
           <Teleport to="body">
             <div v-if="menuOpen" class="fixed z-[999] w-52 rounded-xl border border-white/10 bg-[#11131a]/95 py-1 shadow-glass backdrop-blur-xl" :style="{ top: `${menuTop}px`, left: `${menuLeft}px` }" @click.stop>
@@ -62,7 +61,7 @@
                 <p class="text-sm font-medium text-white">{{ userName }}</p>
                 <p class="text-xs text-white/45">{{ userRole }}</p>
               </div>
-              <button class="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-white/72 transition hover:bg-white/8" @click="navigateMenu('/settings')">
+              <button class="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-white/72 transition hover:bg-white/8" @click="navigateMenu('/profile')">
                 <User class="size-4" /> {{ t('个人中心', 'Profile') }}
               </button>
               <button v-if="isAdmin" class="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-white/72 transition hover:bg-white/8" @click="navigateMenu('/admin/dashboard')">
@@ -82,12 +81,13 @@
 </template>
 
 <script setup lang="ts">
-import { Bell, Clock, Compass, Crown, Globe, LogOut, Moon, PanelRight, Save, Settings, Share2, Shield, Sun, User } from 'lucide-vue-next'
+import { Bell, Clock, Compass, Crown, Globe, LogOut, Moon, PanelRight, Pencil, Share2, Shield, Sun, User } from 'lucide-vue-next'
 import FloatingButton from '~/components/ui/FloatingButton.vue'
 import { useAuthStore } from '~/stores/authStore'
 import { useCanvasStore } from '~/stores/canvasStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { useWorkspaceStore } from '~/stores/workspaceStore'
+import { projectService } from '~/services/projectService'
 
 const authStore = useAuthStore()
 const canvasStore = useCanvasStore()
@@ -132,25 +132,33 @@ function navigateMenu(path: string) {
   navigateTo(path)
 }
 
-const lastSaved = ref('')
-const lastSavedError = ref(false)
-
-async function handleSave() {
-  lastSavedError.value = false
-  await canvasStore.saveAll()
-  if (canvasStore.error) {
-    lastSaved.value = t('保存失败', 'Save failed')
-    lastSavedError.value = true
-  } else {
-    lastSaved.value = t('已保存', 'Saved')
-    lastSavedError.value = false
-  }
-  setTimeout(() => { lastSaved.value = '' }, 2500)
-}
-
 function themeToggle() {
   settingsStore.toggleTheme()
   document.documentElement.classList.toggle('light', settingsStore.theme === 'light')
+}
+
+// ========== Rename ==========
+const renaming = ref(false)
+const renameValue = ref('')
+const renameInput = ref<HTMLInputElement>()
+
+function startRename() {
+  renameValue.value = workspaceStore.projectName
+  renaming.value = true
+  nextTick(() => renameInput.value?.select())
+}
+
+async function doRename() {
+  renaming.value = false
+  const name = renameValue.value.trim()
+  if (!name || name === workspaceStore.projectName) return
+  workspaceStore.setProjectName(name)
+  const projectId = canvasStore.activeProjectId
+  if (projectId) {
+    try {
+      await projectService.update(projectId, { name })
+    } catch {}
+  }
 }
 
 onUnmounted(() => {

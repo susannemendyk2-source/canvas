@@ -181,9 +181,10 @@ async function handleGenerate() {
       let url = res.url
       if (typeof url === 'string' && url.startsWith('//')) url = 'https:' + url
       generatedUrl.value = url
-      emit('update', { meta: JSON.stringify({ generatedUrl: url }) })
+      saveMeta({ generatedUrl: url, taskStatus: 'success' })
     } else if (res?.error) {
       errorMsg.value = res.error || t('生成失败', 'Generation failed')
+      saveMeta({ taskStatus: 'failed', error: res.error })
     } else {
       errorMsg.value = t('未返回图像 URL', 'No image URL returned')
     }
@@ -191,6 +192,14 @@ async function handleGenerate() {
     errorMsg.value = err?.message || t('生成出错', 'Generation error')
   }
   generating.value = false
+}
+
+function saveMeta(extra: Record<string, unknown>) {
+  if (!props.objectId) return
+  const current: Record<string, unknown> = {}
+  if (props.meta) { try { Object.assign(current, JSON.parse(props.meta)) } catch {} }
+  Object.assign(current, extra)
+  emit('update', { meta: JSON.stringify(current) })
 }
 
 async function handleDownload() {

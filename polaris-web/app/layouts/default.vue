@@ -21,7 +21,13 @@ import { ArrowLeft, Compass } from 'lucide-vue-next'
 const route = useRoute()
 const isHome = computed(() => route.path === '/')
 
+const router = useRouter()
+
 function goBack() {
-  navigateTo('/studio')
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    navigateTo('/')
+  }
 }
 </script>

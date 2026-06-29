@@ -351,6 +351,7 @@ function handleCanvasClick() {
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
+  window.addEventListener('beforeunload', handleBeforeUnload)
   const pid = route.query.pid as string | undefined
   if (pid) {
     if (import.meta.client) localStorage.setItem('polaris.activeProject', pid)
@@ -362,5 +363,19 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+  saveOnLeave()
 })
+
+async function saveOnLeave() {
+  if (canvasStore.objects.length > 0) {
+    await canvasStore.saveAll()
+  }
+}
+
+function handleBeforeUnload() {
+  if (canvasStore.objects.some(o => o.dirty)) {
+    canvasStore.saveAll()
+  }
+}
 </script>

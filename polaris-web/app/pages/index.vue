@@ -28,6 +28,10 @@
             <Crown class="mr-1 size-3.5 text-cyan-100" />
             {{ t('积分', 'Credits') }}
           </NuxtLink>
+          <button class="inline-flex h-9 items-center gap-1 rounded-full border border-white/10 bg-white/6 px-3 text-xs text-white/72 transition hover:border-cyan-200/35 hover:text-cyan-50" @click="handleThemeToggle">
+            <Sun v-if="settingsStore.theme === 'light'" class="size-3.5" />
+            <Moon v-else class="size-3.5" />
+          </button>
           <button class="inline-flex h-9 items-center gap-1 rounded-full border border-white/10 bg-white/6 px-3 text-xs text-white/72 transition hover:border-cyan-200/35 hover:text-cyan-50" @click="settingsStore.toggleLanguage()">
             <Globe class="size-3.5" />
             {{ settingsStore.language.toUpperCase() }}
@@ -35,7 +39,7 @@
           <NuxtLink v-if="!authStore.isAuthenticated" to="/login" class="grid size-9 place-items-center rounded-full bg-cyan-100 font-semibold text-[#061018]">
             P
           </NuxtLink>
-          <NuxtLink v-else to="/studio" class="grid size-9 place-items-center rounded-full bg-gradient-to-br from-studio-cyan to-studio-violet text-xs font-bold text-white">
+          <NuxtLink v-else to="/profile" class="grid size-9 place-items-center rounded-full bg-gradient-to-br from-studio-cyan to-studio-violet text-xs font-bold text-white">
             {{ userInitial }}
           </NuxtLink>
         </div>
@@ -58,12 +62,12 @@
         <GoalComposer />
 
         <div class="mx-auto mt-5 grid max-w-3xl place-items-center">
-          <NuxtLink to="/studio" class="group grid h-28 w-28 place-items-center rounded-2xl border border-cyan-100/16 bg-white/6 text-sm text-white/78 transition hover:border-cyan-200/45 hover:bg-cyan-100/10">
+          <button class="group grid h-28 w-28 place-items-center rounded-2xl border border-cyan-100/16 bg-white/6 text-sm text-white/78 transition hover:border-cyan-200/45 hover:bg-cyan-100/10" @click="handleNewProject">
             <span class="grid gap-2 text-center">
               <Plus class="mx-auto size-5 transition group-hover:rotate-90" />
               {{ t('新建项目', 'New Project') }}
             </span>
-          </NuxtLink>
+          </button>
         </div>
 
         <section class="mt-16">
@@ -142,10 +146,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { Compass, Crown, Globe, Map, Navigation, Plus, Search } from 'lucide-vue-next'
+import { Compass, Crown, Globe, Map, Moon, Navigation, Plus, Search, Sun } from 'lucide-vue-next'
 import GoalComposer from '~/components/home/GoalComposer.vue'
 import { useAuthStore } from '~/stores/authStore'
 import { useSettingsStore } from '~/stores/settingsStore'
+import { projectService } from '~/services/projectService'
 
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
@@ -199,6 +204,30 @@ const filteredExplore = computed(() => {
     return matchesFilter && matchesQuery
   })
 })
+
+async function handleNewProject() {
+  try {
+    const project: any = await projectService.create({
+      name: t('新画布', 'New Canvas'),
+      mode: 'magic-canvas',
+      description: ''
+    })
+    const id = project.id || project?.data?.id
+    if (id) {
+      if (import.meta.client) localStorage.setItem('polaris.activeProject', String(id))
+      navigateTo(`/studio?pid=${id}`)
+    } else {
+      navigateTo('/studio')
+    }
+  } catch {
+    navigateTo('/studio')
+  }
+}
+
+function handleThemeToggle() {
+  settingsStore.toggleTheme()
+  document.documentElement.classList.toggle('light', settingsStore.theme === 'light')
+}
 
 onMounted(() => {
   settingsStore.init()

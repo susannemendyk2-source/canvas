@@ -61,11 +61,14 @@ import { Ellipsis, ExternalLink, File, Trash2, X } from 'lucide-vue-next'
 import StatusBadge from '~/components/ui/StatusBadge.vue'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { useAssetStore } from '~/stores/assetStore'
+import { useCanvasStore } from '~/stores/canvasStore'
 import { projectService } from '~/services/projectService'
 
 const settingsStore = useSettingsStore()
 const assetStore = useAssetStore()
+const canvasStore = useCanvasStore()
 const openMenuId = ref<string | null>(null)
+const loading = ref(false)
 const t = (zh: string, en: string) => settingsStore.t(zh, en)
 
 if (import.meta.client) {
@@ -84,13 +87,13 @@ function toggleMenu(id: string) {
   openMenuId.value = openMenuId.value === id ? null : id
 }
 
-function applyCanvas(id: string) {
+async function applyCanvas(id: string) {
   openMenuId.value = null
   settingsStore.toggleHistory()
   if (import.meta.client) {
     localStorage.setItem('polaris.activeProject', id)
   }
-  canvasStore.loadProject(Number(id))
+  await canvasStore.loadProject(Number(id))
 }
 
 function previewCanvas(id: string) {
@@ -109,19 +112,54 @@ async function deleteCanvas(id: string) {
 }
 
 async function loadProjectHistory() {
+  if (loading.value) return
+  loading.value = true
   try {
     const res: any = await projectService.list({})
     const projects = Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : res?.records || []
-    for (const p of projects) {
+    // Check objects for all projects in parallel (batch of 5)
+    const results: { project: any; objects: any[] }[] = []
+    for (let i = 0; i < projects.length; i += 5) {
+      const batch = projects.slice(i, i + 5)
+      const checks = await Promise.allSettled(
+        batch.map(p =>
+          projectService.getObjects(p.id).then(objs => ({ project: p, objects: (objs as any).data || [] }))
+        )
+      )
+      for (const r of checks) {
+        if (r.status === 'fulfilled') results.push(r.value)
+      }
+    }
+    for (const { project: p, objects } of results) {
+      if (!objects || objects.length === 0) continue
+      const hasGenerations = objects.some((o: any) => {
+        if (!o.meta) return false
+        try {
+          const m = typeof o.meta === 'string' ? JSON.parse(o.meta) : o.meta
+          return m.taskId || m.taskStatus
+        } catch { return false }
+      })
+      // Find most recent task status among objects
+      let latestStatus: string = 'success'
+      for (const o of objects) {
+        try {
+          const m = typeof o.meta === 'string' ? JSON.parse(o.meta) : o.meta
+          if (m.taskStatus === 'running' || m.taskStatus === 'queued') {
+            latestStatus = m.taskStatus; break
+          }
+          if (m.taskStatus === 'failed') latestStatus = 'failed'
+        } catch {}
+      }
       assetStore.addHistory({
         id: String(p.id),
         title: p.name || 'Canvas Project',
         type: 'project',
-        status: 'completed',
-        progress: 100,
+        status: hasGenerations ? latestStatus as any : 'idle',
+        progress: hasGenerations ? (latestStatus === 'success' ? 100 : latestStatus === 'running' ? 50 : 0) : 0,
         createdAt: p.createdAt ? new Date(p.createdAt).toLocaleString() : ''
       })
     }
   } catch {}
+  loading.value = false
 }
 </script>

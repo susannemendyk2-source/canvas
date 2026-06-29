@@ -171,10 +171,13 @@ async function handleGenerate() {
     }))
     if (res?.url) {
       generatedUrl.value = res.url
+      saveMeta({ generatedUrl: res.url, taskStatus: 'success' })
     } else if (res?.taskId) {
+      saveMeta({ taskId: res.taskId, taskStatus: 'running', prompt: promptText.value, startedAt: Date.now() })
       pollTask(res.taskId)
     } else if (res?.error) {
       errorMsg.value = res.error
+      saveMeta({ taskStatus: 'failed', error: res.error })
     } else {
       errorMsg.value = t('服务器没有返回结果', 'No response from server')
     }
@@ -182,6 +185,14 @@ async function handleGenerate() {
     errorMsg.value = err?.message || t('生成出错', 'Generation error')
   }
   if (!polling.value) generating.value = false
+}
+
+function saveMeta(extra: Record<string, unknown>) {
+  if (!props.objectId) return
+  const current: Record<string, unknown> = {}
+  if (props.meta) { try { Object.assign(current, JSON.parse(props.meta)) } catch {} }
+  Object.assign(current, extra)
+  emit('update', { meta: JSON.stringify(current) })
 }
 
 const elapsed = ref(0)
@@ -199,17 +210,23 @@ async function pollTask(taskId: string) {
       const res: any = await aiService.getTasks(applyApiConfig('video', { taskId }))
       if (res?.url) {
         generatedUrl.value = res.url
-        emit('update', { meta: JSON.stringify({ generatedUrl: res.url }) })
+        saveMeta({ generatedUrl: res.url, taskStatus: 'success', taskId: undefined })
+        flushSave()
         break
       }
       if (res?.error) {
         errorMsg.value = res.error
+        saveMeta({ taskStatus: 'failed', error: res.error })
+        flushSave()
         break
       }
       if (res?.status && res.status !== 'pending' && res.status !== 'running') {
         errorMsg.value = t(`任务 ${res.status || '失败'}`, `Task ${res.status || 'failed'}`)
+        saveMeta({ taskStatus: 'failed', error: res.status })
+        flushSave()
         break
       }
+      saveMeta({ taskStatus: 'running', polledAt: Date.now() })
     } catch (err: any) {
       errorMsg.value = err?.message || t('任务状态查询失败', 'Task status check failed')
       break
@@ -218,6 +235,12 @@ async function pollTask(taskId: string) {
   polling.value = false
   pollingActive.value = false
   if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null }
+}
+
+function flushSave() {
+  if (!props.objectId) return
+  const canvasStore = useCanvasStore()
+  canvasStore.flushSave(props.objectId)
 }
 
 onBeforeUnmount(() => { pollingActive.value = false; if (elapsedTimer) clearInterval(elapsedTimer) })

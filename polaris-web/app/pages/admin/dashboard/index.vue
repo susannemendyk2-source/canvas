@@ -70,9 +70,9 @@ const health = computed(() => [
 
 const quickLinks = computed(() => [
   { label: t('用户与积分', 'Users and credits'), to: '/admin/users' },
-  { label: t('项目审核', 'Project review'), to: '/admin/projects' },
+  { label: t('模板管理', 'Templates'), to: '/admin/templates' },
   { label: t('模型供应商', 'Providers'), to: '/admin/providers' },
-  { label: t('系统日志', 'System logs'), to: '/admin/logs' },
+  { label: t('系统设置', 'Settings'), to: '/admin/settings' },
 ])
 
 onMounted(async () => {
@@ -81,10 +81,10 @@ onMounted(async () => {
     const res: any = await adminService.dashboard()
     const data = res.data || res || {}
     stats.value = [
-      { key: 'users', label: t('用户总数', 'Total Users'), value: Number(data.totalUsers || 0), icon: Users, color: 'text-cyan-300', hint: t('账号', 'accounts') },
-      { key: 'projects', label: t('项目总数', 'Total Projects'), value: Number(data.totalProjects || 0), icon: FolderKanban, color: 'text-violet-300', hint: t('画布', 'canvases') },
-      { key: 'assets', label: t('素材总数', 'Total Assets'), value: Number(data.totalAssets || 0), icon: Image, color: 'text-emerald-300', hint: t('文件', 'files') },
-      { key: 'credits', label: t('积分消耗', 'Credits Used'), value: Number(data.totalCredits || 0), icon: TrendingUp, color: 'text-amber-300', hint: t('星尘', 'credits') },
+      { key: 'users', label: t('用户总数', 'Total Users'), value: Number(data.userCount || 0), icon: Users, color: 'text-cyan-300', hint: t('账号', 'accounts') },
+      { key: 'projects', label: t('项目总数', 'Total Projects'), value: Number(data.projectCount || 0), icon: FolderKanban, color: 'text-violet-300', hint: t('画布', 'canvases') },
+      { key: 'assets', label: t('素材总数', 'Total Assets'), value: Number(data.assetCount || 0), icon: Image, color: 'text-emerald-300', hint: t('文件', 'files') },
+      { key: 'credits', label: t('总积分', 'Total Credits'), value: Number(data.totalCredits || 0), icon: Coins, color: 'text-amber-300', hint: t('星尘', 'credits') },
     ]
   } catch {}
 })

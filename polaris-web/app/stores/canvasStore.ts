@@ -4,6 +4,7 @@ import type { CanvasLink, CanvasObject, CanvasObjectType } from '~/types'
 import { uid } from '~/utils'
 import { projectService } from '~/services/projectService'
 import { useAssetStore } from '~/stores/assetStore'
+import { useWorkspaceStore } from '~/stores/workspaceStore'
 
 type CanvasPatch = Partial<Omit<CanvasObject, 'id'>>
 
@@ -35,6 +36,9 @@ export const useCanvasStore = defineStore('canvas', () => {
   let linksSaveTimer: ReturnType<typeof setTimeout> | null = null
   const creatingIds = new Set<string>()
   const createPromises = new Map<string, Promise<void>>()
+  const historyStack = ref<{ objects: CanvasObject[]; links: CanvasLink[] }[]>([])
+  const historyIndex = ref(-1)
+  const maxHistory = 50
 
   const selectedObject = computed(() => objects.value.find((item) => item.id === selectedId.value) || null)
   const selectedLinks = computed(() => links.value.filter((link) => link.sourceId === selectedId.value || link.targetId === selectedId.value))
@@ -108,6 +112,7 @@ export const useCanvasStore = defineStore('canvas', () => {
       description: 'Created from Polaris Studio'
     })
     activeProjectId.value = Number(project.id)
+    useWorkspaceStore().setProjectName(project.name || 'Polaris Canvas')
     if (import.meta.client) localStorage.setItem('polaris.activeProject', String(project.id))
     return activeProjectId.value
   }
@@ -125,6 +130,9 @@ export const useCanvasStore = defineStore('canvas', () => {
         projectService.get(id)
       ])
       objects.value = Array.isArray(objectsResult) ? objectsResult.map(normalize) : []
+      if (projectResult) {
+        useWorkspaceStore().setProjectName(projectResult.name || projectResult.title || 'Untitled Project')
+      }
       if (projectResult?.meta) {
         try {
           const parsed = JSON.parse(projectResult.meta)
@@ -149,6 +157,7 @@ export const useCanvasStore = defineStore('canvas', () => {
   }
 
   function addObject(obj: Partial<CanvasObject>) {
+    pushHistory()
     const item: CanvasObject = {
       id: uid('obj'),
       type: obj.type || 'text',
@@ -237,6 +246,12 @@ export const useCanvasStore = defineStore('canvas', () => {
     }, 450))
   }
 
+  async function flushSave(id: string) {
+    const existing = saveTimers.get(id)
+    if (existing) { clearTimeout(existing); saveTimers.delete(id) }
+    await saveObject(id)
+  }
+
   async function saveObject(id: string) {
     const obj = objects.value.find((item) => item.id === id)
     if (!obj) return
@@ -276,14 +291,16 @@ export const useCanvasStore = defineStore('canvas', () => {
       persistLocalLinks()
       markSaved()
       const assetStore = useAssetStore()
-      assetStore.addHistory({
-        id: `saved-${Date.now()}`,
-        title: objects.value.length > 0 ? `Canvas (${objects.value.length} cards)` : 'Canvas saved',
-        type: 'project',
-        status: 'completed',
-        progress: 100,
-        createdAt: new Date().toLocaleString()
-      })
+      if (activeProjectId.value && objects.value.length > 0) {
+        assetStore.addHistory({
+          id: String(activeProjectId.value),
+          title: `Canvas (${objects.value.length} cards)`,
+          type: 'project',
+          status: 'success',
+          progress: 100,
+          createdAt: new Date().toLocaleString()
+        })
+      }
     } catch (err: any) {
       error.value = err?.message || 'Failed to save canvas'
     } finally {
@@ -305,6 +322,7 @@ export const useCanvasStore = defineStore('canvas', () => {
   }
 
   async function removeObject(id: string) {
+    pushHistory()
     const obj = objects.value.find((item) => item.id === id)
     objects.value = objects.value.filter((item) => item.id !== id)
     links.value = links.value.filter((link) => link.sourceId !== id && link.targetId !== id)
@@ -322,6 +340,7 @@ export const useCanvasStore = defineStore('canvas', () => {
   }
 
   function clearAll() {
+    pushHistory()
     objects.value = []
     links.value = []
     selectedId.value = null
@@ -359,6 +378,7 @@ export const useCanvasStore = defineStore('canvas', () => {
     if (sourceId === targetId) return null
     const exists = links.value.some((link) => link.sourceId === sourceId && link.targetId === targetId)
     if (exists) return null
+    pushHistory()
     const link: CanvasLink = { id: uid('link'), sourceId, targetId, label }
     links.value.push(link)
     persistLocalLinks()
@@ -374,6 +394,7 @@ export const useCanvasStore = defineStore('canvas', () => {
   }
 
   function removeLink(id: string) {
+    pushHistory()
     links.value = links.value.filter((link) => link.id !== id)
     persistLocalLinks()
     scheduleLinksSave()
@@ -432,6 +453,32 @@ export const useCanvasStore = defineStore('canvas', () => {
     lastSavedAt.value = new Date().toLocaleTimeString()
   }
 
+  function pushHistory() {
+    const snapshot = { objects: JSON.parse(JSON.stringify(objects.value)), links: JSON.parse(JSON.stringify(links.value)) }
+    if (historyIndex.value < historyStack.value.length - 1) {
+      historyStack.value = historyStack.value.slice(0, historyIndex.value + 1)
+    }
+    historyStack.value.push(snapshot)
+    if (historyStack.value.length > maxHistory) historyStack.value.shift()
+    historyIndex.value = historyStack.value.length - 1
+  }
+
+  function undo() {
+    if (historyIndex.value <= 0) return
+    historyIndex.value--
+    const snapshot = historyStack.value[historyIndex.value]
+    objects.value = JSON.parse(JSON.stringify(snapshot.objects))
+    links.value = JSON.parse(JSON.stringify(snapshot.links))
+  }
+
+  function redo() {
+    if (historyIndex.value >= historyStack.value.length - 1) return
+    historyIndex.value++
+    const snapshot = historyStack.value[historyIndex.value]
+    objects.value = JSON.parse(JSON.stringify(snapshot.objects))
+    links.value = JSON.parse(JSON.stringify(snapshot.links))
+  }
+
   return {
     objects,
     links,
@@ -461,8 +508,14 @@ export const useCanvasStore = defineStore('canvas', () => {
     finishConnection,
     cancelConnection,
     saveAll,
+    flushSave,
     clearAll,
+    pushHistory,
+    historyIndex,
+    historyStack,
     setZoom,
+    undo,
+    redo,
     reset
   }
 })

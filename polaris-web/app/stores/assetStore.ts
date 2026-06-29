@@ -10,7 +10,12 @@ export const useAssetStore = defineStore('asset', () => {
   const assetCount = computed(() => assets.value.length)
 
   function addHistory(item: HistoryItem) {
-    history.value.unshift(item)
+    const existing = history.value.findIndex(h => h.id === item.id)
+    if (existing >= 0) {
+      history.value[existing] = item
+    } else {
+      history.value.unshift(item)
+    }
   }
 
   function removeHistory(id: string) {

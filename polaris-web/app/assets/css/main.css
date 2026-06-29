@@ -7,29 +7,57 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-primary: #03050b;
+  --bg-secondary: #050608;
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-elevated: #111722;
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-tertiary: rgba(255, 255, 255, 0.35);
+  --border-color: rgba(255, 255, 255, 0.10);
+  --glass-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.045));
+  --glass-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+  --dotted-opacity: 0.13;
+}
+
+.light {
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(0, 0, 0, 0.03);
+  --bg-elevated: #ffffff;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #aeaeb2;
+  --border-color: rgba(0, 0, 0, 0.10);
+  --glass-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+  --glass-shadow: 0 18px 60px rgba(0, 0, 0, 0.08);
+  --dotted-opacity: 0.06;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
   min-height: 100vh;
   margin: 0;
-  background: #050608;
-  color: rgba(255, 255, 255, 0.92);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 button, input, textarea, select { font: inherit; }
 
 .glass {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.045));
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-color);
+  background: var(--glass-bg);
+  box-shadow: var(--glass-shadow);
   backdrop-filter: blur(22px);
 }
 
 .dotted-grid {
   background-image:
-    radial-gradient(circle at center, rgba(255, 255, 255, 0.13) 1px, transparent 1px),
-    radial-gradient(circle at 20% 10%, rgba(102, 228, 255, 0.13), transparent 30%),
-    radial-gradient(circle at 80% 20%, rgba(157, 123, 255, 0.12), transparent 34%);
+    radial-gradient(circle at center, rgba(255, 255, 255, var(--dotted-opacity)) 1px, transparent 1px),
+    radial-gradient(circle at 20% 10%, rgba(102, 228, 255, var(--dotted-opacity)), transparent 30%),
+    radial-gradient(circle at 80% 20%, rgba(157, 123, 255, calc(var(--dotted-opacity) - 0.01)), transparent 34%);
   background-size: 28px 28px, 100% 100%, 100% 100%;
 }

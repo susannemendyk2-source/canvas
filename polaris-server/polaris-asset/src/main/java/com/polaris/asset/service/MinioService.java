@@ -10,12 +10,16 @@ import io.minio.http.Method;
 import jakarta.annotation.PostConstruct;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class MinioService {
+
+    private static final Logger log = LoggerFactory.getLogger(MinioService.class);
 
     @Value("${minio.endpoint}")
     private String endpoint;
@@ -33,11 +37,16 @@ public class MinioService {
 
     @PostConstruct
     public void init() {
-        minioClient = MinioClient.builder()
-                .endpoint(endpoint)
-                .credentials(accessKey, secretKey)
-                .build();
-        createBucketIfNotExists();
+        try {
+            minioClient = MinioClient.builder()
+                    .endpoint(endpoint)
+                    .credentials(accessKey, secretKey)
+                    .build();
+            createBucketIfNotExists();
+        } catch (Exception e) {
+            log.warn("MinIO not available, file upload will fail: {}", e.getMessage());
+            minioClient = null;
+        }
     }
 
     public void createBucketIfNotExists() {
@@ -47,11 +56,14 @@ public class MinioService {
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create MinIO bucket", e);
+            log.warn("MinIO createBucketIfNotExists failed: {}", e.getMessage());
         }
     }
 
     public String uploadFile(MultipartFile file, String objectName) {
+        if (minioClient == null) {
+            throw new RuntimeException("MinIO not configured, cannot upload file");
+        }
         try (InputStream inputStream = file.getInputStream()) {
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(bucket)
@@ -66,6 +78,7 @@ public class MinioService {
     }
 
     public void deleteFile(String objectName) {
+        if (minioClient == null) return;
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()
                     .bucket(bucket)

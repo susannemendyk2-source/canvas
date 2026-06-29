@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Boxes, Clapperboard, Compass, ImageIcon, Send, Sparkles, WandSparkles, Workflow } from 'lucide-vue-next'
 import FloatingButton from '~/components/ui/FloatingButton.vue'
 import ModelSelector from '~/components/ui/ModelSelector.vue'
@@ -289,4 +289,22 @@ function buildWorkflowFromMessage(content: string) {
   workflowStore.addEdge(wfVideo.id, output.id)
   workspaceStore.setMode('workflow')
 }
+
+onMounted(() => {
+  if (import.meta.client) {
+    const raw = localStorage.getItem('polaris.pendingAgentMessages')
+    if (raw) {
+      try {
+        const pending = JSON.parse(raw)
+        if (Array.isArray(pending) && pending.length > 0) {
+          messages.value = [
+            ...pending,
+            ...messages.value
+          ]
+        }
+      } catch {}
+      localStorage.removeItem('polaris.pendingAgentMessages')
+    }
+  }
+})
 </script>
