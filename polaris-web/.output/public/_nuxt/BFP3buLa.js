@@ -1,0 +1,1 @@
+import{af as o,J as t}from"./R7s8cDsV.js";const l=o(e=>{{if(!localStorage.getItem("polaris.token"))return t("/login");if(e.path.startsWith("/admin")&&localStorage.getItem("polaris.role")!=="ADMIN")return t("/studio")}});export{l as default};

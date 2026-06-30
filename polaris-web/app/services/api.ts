@@ -1,9 +1,21 @@
 import axios from 'axios'
 
-const apiBase = import.meta.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080'
+const getApiBase = () => {
+  const configured = import.meta.env.NUXT_PUBLIC_API_BASE
+  if (configured) return configured
+
+  if (import.meta.client) {
+    const host = window.location.hostname
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:8080'
+    }
+  }
+
+  return ''
+}
 
 const api = axios.create({
-  baseURL: apiBase,
+  baseURL: getApiBase(),
   timeout: 120000,
   headers: { 'Content-Type': 'application/json' }
 })

@@ -5,6 +5,7 @@ dist/
 *.jar
 *.log
 *.err
+release/
 .idea/
 *.iml
 .DS_Store

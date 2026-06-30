@@ -24,6 +24,9 @@ public class MinioService {
     @Value("${minio.endpoint}")
     private String endpoint;
 
+    @Value("${minio.public-endpoint:${minio.endpoint}}")
+    private String publicEndpoint;
+
     @Value("${minio.access-key}")
     private String accessKey;
 
@@ -103,6 +106,7 @@ public class MinioService {
     }
 
     public String getFileUrl(String objectName) {
-        return endpoint + "/" + bucket + "/" + objectName;
+        String base = publicEndpoint != null && !publicEndpoint.isBlank() ? publicEndpoint : endpoint;
+        return base.replaceAll("/+$", "") + "/" + bucket + "/" + objectName;
     }
 }
