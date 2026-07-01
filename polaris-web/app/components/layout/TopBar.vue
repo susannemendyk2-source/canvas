@@ -1,13 +1,16 @@
 <template>
-  <header class="fixed left-0 right-0 top-0 z-50 flex h-14 items-center border-b border-cyan-100/10 bg-[#04070d]/95 px-4 backdrop-blur-xl">
+  <header class="fixed left-0 right-0 top-0 z-50 flex h-14 items-center border-b border-cyan-100/10 bg-[#030814]/94 px-4 backdrop-blur-xl">
     <div class="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4">
       <div class="flex min-w-0 items-center gap-3">
         <button class="flex items-center gap-3" @click="navigateTo('/')">
-          <Compass class="size-5 text-studio-cyan" />
-          <span class="text-sm font-semibold text-white">Polaris</span>
+          <span class="grid size-8 place-items-center overflow-hidden rounded-full border border-cyan-100/20 bg-cyan-100/8">
+            <img src="/brand/polaris-logo.png" alt="Polaris" class="size-8 scale-[2.5] object-cover" />
+          </span>
+          <span class="hidden text-sm font-semibold text-white sm:inline">Polaris</span>
+          <span class="hidden text-[10px] uppercase tracking-[0.18em] text-cyan-100/48 md:inline">AI Creation OS</span>
         </button>
-        <div v-if="!renaming" class="group flex items-center gap-1.5">
-          <span class="truncate text-sm text-white/45 cursor-pointer" @dblclick="startRename">{{ workspaceStore.projectName }}</span>
+        <div v-if="!renaming" class="group flex min-w-0 items-center gap-1.5">
+          <span class="cursor-pointer truncate text-sm text-white/48" @dblclick="startRename">{{ workspaceStore.projectName }}</span>
           <Pencil class="size-3 text-white/25 opacity-0 transition group-hover:opacity-100" />
         </div>
         <div v-else class="flex items-center gap-1">
@@ -15,18 +18,18 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-1 rounded-lg bg-black/30 p-0.5">
-        <button class="rounded-md px-3 py-1.5 text-xs font-medium transition" :class="workspaceStore.mode === 'magic' ? 'bg-cyan-300/18 text-cyan-50 shadow-glow' : 'text-white/55 hover:text-white/80'" @click="workspaceStore.setMode('magic')">
+      <div class="flex items-center gap-1 rounded-xl border border-cyan-100/10 bg-black/30 p-0.5">
+        <button class="rounded-lg px-3 py-1.5 text-xs font-medium transition" :class="workspaceStore.mode === 'magic' ? 'bg-cyan-300/18 text-cyan-50 shadow-glow' : 'text-white/55 hover:text-white/80'" @click="workspaceStore.setMode('magic')">
           {{ t('星图画布', 'Star Map') }}
         </button>
-        <button class="rounded-md px-3 py-1.5 text-xs font-medium transition" :class="workspaceStore.mode === 'workflow' ? 'bg-cyan-300/18 text-cyan-50 shadow-glow' : 'text-white/55 hover:text-white/80'" @click="workspaceStore.setMode('workflow')">
+        <button class="rounded-lg px-3 py-1.5 text-xs font-medium transition" :class="workspaceStore.mode === 'workflow' ? 'bg-cyan-300/18 text-cyan-50 shadow-glow' : 'text-white/55 hover:text-white/80'" @click="workspaceStore.setMode('workflow')">
           {{ t('节点工作流', 'Workflow') }}
         </button>
       </div>
 
       <div class="flex items-center justify-end gap-2">
         <button class="flex items-center gap-1 rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-xs text-white/62 transition hover:border-cyan-200/30 hover:text-cyan-50" @click="navigateTo('/credits')">
-          <Crown class="size-3 text-cyan-100" />
+          <Crown class="size-3 text-[#c7a76b]" />
           {{ authStore.credits.toLocaleString() }}
         </button>
         <FloatingButton :title="t('语言', 'Language')" @click="settingsStore.toggleLanguage()">
@@ -40,7 +43,7 @@
         <FloatingButton :title="t('分享', 'Share')">
           <Share2 class="size-3.5" />
         </FloatingButton>
-        <FloatingButton :title="t('侧栏', 'Panel')" @click="settingsStore.showPanel = !settingsStore.showPanel">
+        <FloatingButton :title="t('右侧面板', 'Panel')" @click="settingsStore.showPanel = !settingsStore.showPanel">
           <PanelRight class="size-3.5" />
         </FloatingButton>
         <FloatingButton :title="t('历史', 'History')" @click="settingsStore.toggleHistory()">
@@ -51,12 +54,12 @@
         </FloatingButton>
 
         <div ref="avatarRef" class="relative">
-          <button class="size-8 overflow-hidden rounded-full bg-gradient-to-br from-studio-cyan to-studio-violet text-xs font-bold text-white" @click.stop="toggleMenu">
+          <button class="size-8 overflow-hidden rounded-full bg-gradient-to-br from-cyan-100 to-blue-500 text-xs font-bold text-[#061018]" @click.stop="toggleMenu">
             <img v-if="authStore.user?.avatar" :src="authStore.user.avatar" class="size-full object-cover" />
             <span v-else>{{ userInitial }}</span>
           </button>
           <Teleport to="body">
-            <div v-if="menuOpen" class="fixed z-[999] w-52 rounded-xl border border-white/10 bg-[#11131a]/95 py-1 shadow-glass backdrop-blur-xl" :style="{ top: `${menuTop}px`, left: `${menuLeft}px` }" @click.stop>
+            <div v-if="menuOpen" class="fixed z-[999] w-52 rounded-xl border border-cyan-100/12 bg-[#07111f]/95 py-1 shadow-glass backdrop-blur-xl" :style="{ top: `${menuTop}px`, left: `${menuLeft}px` }" @click.stop>
               <div class="border-b border-white/8 px-4 py-3">
                 <p class="text-sm font-medium text-white">{{ userName }}</p>
                 <p class="text-xs text-white/45">{{ userRole }}</p>
@@ -81,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { Bell, Clock, Compass, Crown, Globe, LogOut, Moon, PanelRight, Pencil, Share2, Shield, Sun, User } from 'lucide-vue-next'
+import { Bell, Clock, Crown, Globe, LogOut, Moon, PanelRight, Pencil, Share2, Shield, Sun, User } from 'lucide-vue-next'
 import FloatingButton from '~/components/ui/FloatingButton.vue'
 import { useAuthStore } from '~/stores/authStore'
 import { useCanvasStore } from '~/stores/canvasStore'
@@ -137,7 +140,6 @@ function themeToggle() {
   document.documentElement.classList.toggle('light', settingsStore.theme === 'light')
 }
 
-// ========== Rename ==========
 const renaming = ref(false)
 const renameValue = ref('')
 const renameInput = ref<HTMLInputElement>()
@@ -165,13 +167,3 @@ onUnmounted(() => {
   document.removeEventListener('click', closeMenu)
 })
 </script>
-
-<style scoped>
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fade-in 0.25s ease-out;
-}
-</style>

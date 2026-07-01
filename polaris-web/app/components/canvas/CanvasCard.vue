@@ -1,8 +1,8 @@
 <template>
   <div
-    class="glass group absolute rounded-lg border p-3 transition-[border-color,opacity,transform] duration-150"
+    class="polaris-card group absolute rounded-lg p-3 transition-[border-color,opacity,transform] duration-150"
     :class="[
-      selected ? 'border-cyan-300/45 shadow-glow' : 'border-white/10',
+      selected ? 'border-cyan-300/45 shadow-[0_0_34px_rgba(143,234,255,.18)]' : 'border-cyan-100/14',
       connecting ? 'ring-2 ring-emerald-300/60' : '',
       isDragging ? 'z-50 scale-[1.02] opacity-80 shadow-2xl' : ''
     ]"
@@ -11,12 +11,12 @@
   >
     <div class="mb-3 flex items-center justify-between gap-3">
       <div class="flex min-w-0 flex-1 items-center gap-2">
-        <div class="grid size-7 shrink-0 cursor-grab place-items-center rounded text-white/35 hover:bg-white/8 hover:text-white/70" :class="{ 'cursor-grabbing': isDragging }">
+        <div class="grid size-7 shrink-0 cursor-grab place-items-center rounded text-cyan-100/45 hover:bg-white/8 hover:text-cyan-50" :class="{ 'cursor-grabbing': isDragging }">
           <GripVertical class="size-4" />
         </div>
         <input
           :value="object.title"
-          class="min-w-0 flex-1 truncate rounded border border-transparent bg-transparent px-1 py-1 text-sm font-medium text-white/86 outline-none focus:border-cyan-300/30 focus:bg-black/20"
+          class="min-w-0 flex-1 truncate rounded border border-transparent bg-transparent px-1 py-1 text-sm font-medium text-white/88 outline-none focus:border-cyan-300/30 focus:bg-black/20"
           @input="updateTitle"
           @pointerdown.stop
           @click.stop
@@ -49,6 +49,9 @@
       @pointerdown.stop
       @click.stop
     />
+
+    <div class="pointer-events-none absolute -left-1 top-1/2 size-2 -translate-y-1/2 rounded-full bg-cyan-100/80 shadow-[0_0_14px_rgba(143,234,255,.6)]" />
+    <div class="pointer-events-none absolute -right-1 top-1/2 size-2 -translate-y-1/2 rounded-full bg-cyan-100/80 shadow-[0_0_14px_rgba(143,234,255,.6)]" />
 
     <div
       class="absolute bottom-1 right-1 size-4 cursor-nwse-resize rounded-sm border-b border-r border-cyan-100/35 opacity-0 transition group-hover:opacity-100"
@@ -93,7 +96,6 @@ function shouldIgnore(e: PointerEvent): boolean {
 
 function onPointerDown(e: PointerEvent) {
   if (e.button !== 0 || shouldIgnore(e)) return
-
   emit('select')
 
   const dragStartX = e.clientX
@@ -102,9 +104,7 @@ function onPointerDown(e: PointerEvent) {
   const objY = props.object.y
 
   function onMove(ev: PointerEvent) {
-    if (!isDragging.value) {
-      isDragging.value = true
-    }
+    if (!isDragging.value) isDragging.value = true
     emit('move', objX + ev.clientX - dragStartX, objY + ev.clientY - dragStartY)
   }
 

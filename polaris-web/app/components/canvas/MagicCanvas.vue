@@ -2,7 +2,8 @@
   <div
     ref="canvasRoot"
     data-canvas-root="true"
-    class="dotted-grid absolute inset-0 overflow-hidden bg-[#03050b]" :class="{ 'cursor-grab': !isPanning, 'cursor-grabbing': isPanning }"
+    class="dotted-grid absolute inset-0 overflow-hidden bg-[#030814]"
+    :class="{ 'cursor-grab': !isPanning, 'cursor-grabbing': isPanning }"
     tabindex="0"
     @dblclick="openMenuFromEvent"
     @contextmenu.capture.prevent
@@ -10,26 +11,26 @@
     @wheel.prevent="handleWheel"
     @click="handleCanvasClick"
   >
-    <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(56,189,248,.10),transparent_32%)]" />
+    <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(78,201,255,.12),transparent_34%)]" />
 
     <div v-if="canvasStore.loading" class="absolute inset-0 z-50 grid place-items-center bg-black/30 text-sm text-white/60">
-      {{ t('正在加载画布...', 'Loading canvas...') }}
+      {{ t('正在加载星图画布...', 'Loading Star Map Canvas...') }}
     </div>
 
-    <div class="absolute left-6 top-5 z-30 rounded-full border border-cyan-100/12 bg-black/45 px-3 py-1.5 text-xs text-white/45 backdrop-blur">
+    <div class="absolute left-6 top-5 z-30 rounded-full border border-cyan-100/14 bg-black/45 px-3 py-1.5 text-xs text-white/55 backdrop-blur">
       {{ t('Polaris 星图画布', 'Polaris Star Map Canvas') }}
     </div>
 
     <div v-if="canvasStore.connectionStartId" class="absolute left-1/2 top-5 z-40 -translate-x-1/2 rounded-full border border-emerald-200/25 bg-emerald-300/10 px-4 py-2 text-xs text-emerald-100 backdrop-blur">
-      {{ t('选择另一张卡片完成连接。点击空白画布可取消。', 'Pick another card to connect. Click empty canvas to cancel.') }}
+      {{ t('选择另一个节点完成连接。点击空白画布可取消。', 'Pick another node to connect. Click empty canvas to cancel.') }}
     </div>
 
     <div class="absolute right-6 top-7 z-30 flex items-center gap-2">
-      <button data-no-canvas-menu="true" class="rounded-lg border border-cyan-100/12 bg-black/45 px-4 py-2 text-sm text-white/84 backdrop-blur transition hover:border-cyan-200/35" @click.stop="addQuickCard('prompt')">
+      <button data-no-canvas-menu="true" class="rounded-lg border border-cyan-100/14 bg-black/45 px-4 py-2 text-sm text-white/84 backdrop-blur transition hover:border-cyan-200/35" @click.stop="addQuickCard('prompt')">
         <Plus class="mr-2 inline size-4" />
         {{ t('添加 Prompt', 'Add Prompt') }}
       </button>
-      <button data-no-canvas-menu="true" class="rounded-lg border border-cyan-100/12 bg-black/45 px-4 py-2 text-sm text-white/84 backdrop-blur transition hover:border-cyan-200/35" @click.stop="workspaceStore.setMode('workflow')">
+      <button data-no-canvas-menu="true" class="rounded-lg border border-cyan-100/14 bg-black/45 px-4 py-2 text-sm text-white/84 backdrop-blur transition hover:border-cyan-200/35" @click.stop="workspaceStore.setMode('workflow')">
         <Play class="mr-2 inline size-4" />
         {{ t('运行 Workflow', 'Run Workflow') }}
       </button>
@@ -37,16 +38,16 @@
 
     <div v-if="canvasStore.objects.length === 0" class="absolute inset-0 z-10 grid place-items-center px-8">
       <div class="max-w-2xl text-center">
-        <div class="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-100/12 bg-white/6 px-3 py-1.5 text-xs text-white/58">
+        <div class="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-100/14 bg-white/6 px-3 py-1.5 text-xs text-white/62 backdrop-blur">
           <Compass class="size-3.5 text-cyan-100" />
-          {{ t('双击空白区域添加节点', 'Double click an empty area to add a node') }}
+          {{ t('双击空白星图区域添加节点', 'Double click an empty star-map area to add a node') }}
         </div>
 
         <div class="mb-6 grid gap-3 sm:grid-cols-3" @dblclick.stop>
           <button
             v-for="route in starterRoutes"
             :key="route.title"
-            class="rounded-xl border border-white/10 bg-white/6 p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-200/35 hover:bg-cyan-100/8"
+            class="polaris-card p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-200/35 hover:bg-cyan-100/8"
             @click.stop="createStarterRoute(route.kind)"
           >
             <component :is="route.icon" class="mb-3 size-5 text-cyan-100" />
@@ -59,7 +60,7 @@
           <button
             v-for="item in waypointTypes"
             :key="item.type"
-            class="rounded-full border border-cyan-100/12 bg-white/6 px-4 py-2 text-sm text-white/68 transition hover:border-cyan-200/35 hover:text-cyan-50"
+            class="rounded-full border border-cyan-100/14 bg-white/6 px-4 py-2 text-sm text-white/68 transition hover:border-cyan-200/35 hover:text-cyan-50"
             @click.stop="addQuickCard(item.type)"
           >
             <component :is="item.icon" class="mr-2 inline size-4" />
@@ -71,13 +72,13 @@
 
     <div
       v-if="contextMenu.visible"
-      class="fixed z-[999] w-64 rounded-2xl border border-cyan-100/14 bg-[#111722]/95 p-3 shadow-glass backdrop-blur-xl"
+      class="fixed z-[999] w-64 rounded-2xl border border-cyan-100/16 bg-[#07111f]/95 p-3 shadow-glass backdrop-blur-xl"
       :style="{ left: `${contextMenu.x}px`, top: `${contextMenu.y}px` }"
       @click.stop
       @dblclick.stop
     >
       <div class="mb-3 flex items-center justify-between">
-        <div class="text-sm font-medium">{{ t('添加节点', 'Add Node') }}</div>
+        <div class="text-sm font-medium text-white">{{ t('添加星图节点', 'Add Star Map Node') }}</div>
         <button class="grid size-7 place-items-center rounded-lg text-white/42 hover:bg-white/8 hover:text-white" @click="contextMenu.visible = false">
           <X class="size-4" />
         </button>
@@ -104,13 +105,13 @@
       <svg class="pointer-events-none absolute left-0 top-0 h-[4000px] w-[4000px] overflow-visible" data-canvas-surface="true">
         <defs>
           <marker id="canvas-arrow" markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
-            <path d="M0,0 L8,4 L0,8 Z" fill="rgba(103,232,249,.72)" />
+            <path d="M0,0 L8,4 L0,8 Z" fill="rgba(143,234,255,.74)" />
           </marker>
         </defs>
         <g v-for="edge in linkPaths" :key="edge.id" class="pointer-events-auto">
           <path
             :d="edge.path"
-            class="cursor-pointer fill-none stroke-cyan-200/55 transition hover:stroke-cyan-100"
+            class="star-route cursor-pointer fill-none transition hover:stroke-cyan-100"
             stroke-width="2"
             stroke-linecap="round"
             marker-end="url(#canvas-arrow)"
@@ -177,15 +178,15 @@ const t = (zh: string, en: string) => settingsStore.t(zh, en)
 
 const waypointTypes = computed(() => [
   { type: 'prompt' as const, label: t('Prompt 提示词', 'Prompt'), icon: FileText },
-  { type: 'image' as const, label: t('图像', 'Image'), icon: ImagePlus },
-  { type: 'video' as const, label: t('视频', 'Video'), icon: FileVideo },
-  { type: 'moodboard' as const, label: t('分镜', 'Storyboard'), icon: LayoutTemplate }
+  { type: 'image' as const, label: t('图像生成', 'Image'), icon: ImagePlus },
+  { type: 'video' as const, label: t('视频生成', 'Video'), icon: FileVideo },
+  { type: 'moodboard' as const, label: t('分镜脚本', 'Storyboard'), icon: LayoutTemplate }
 ])
 
 const starterRoutes = computed(() => [
   { kind: 'video' as const, title: t('短视频路线', 'Short video route'), subtitle: 'Prompt -> Image -> Video', icon: Clapperboard },
-  { kind: 'poster' as const, title: t('海报地图', 'Poster map'), subtitle: t('Prompt -> 图像 -> 导出', 'Prompt -> Image -> Export'), icon: ImagePlus },
-  { kind: 'storyboard' as const, title: t('分镜路线', 'Storyboard'), subtitle: t('故事 -> 分镜帧', 'Story -> Frames'), icon: Boxes }
+  { kind: 'poster' as const, title: t('海报星图', 'Poster map'), subtitle: t('Prompt -> 图像 -> 输出', 'Prompt -> Image -> Export'), icon: ImagePlus },
+  { kind: 'storyboard' as const, title: t('分镜路线', 'Storyboard'), subtitle: t('故事 -> 分镜 -> 视频', 'Story -> Frames -> Video'), icon: Boxes }
 ])
 
 const linkPaths = computed(() => {
@@ -240,7 +241,6 @@ function handlePointerDown(e: PointerEvent) {
   if (e.button !== 0) return
   const target = e.target as HTMLElement | null
   if (target?.closest('textarea,input,select,button,[data-no-canvas-menu="true"]')) return
-
   if (target?.closest('.group')) return
 
   isPanning = true
@@ -283,13 +283,13 @@ function addQuickCard(type: NodeType) {
 
 function createAt(type: NodeType, x: number, y: number) {
   if (type === 'image') {
-    canvasStore.addObject({ type: 'image', x, y, width: 600, height: 430, title: t('图像节点', 'Image waypoint'), content: t('描述图像生成或编辑要求。', 'Describe image generation or editing instructions.') })
+    canvasStore.addObject({ type: 'image', x, y, width: 600, height: 430, title: t('图像生成节点', 'Image Node'), content: t('描述图像生成、参考图或编辑要求。', 'Describe image generation, references or editing instructions.') })
   } else if (type === 'video') {
-    canvasStore.addObject({ type: 'video', x, y, width: 600, height: 430, title: t('视频节点', 'Video waypoint'), content: t('描述场景、镜头运动、时长和参考素材。', 'Describe scene, camera motion, duration and references.') })
+    canvasStore.addObject({ type: 'video', x, y, width: 600, height: 430, title: t('视频生成节点', 'Video Node'), content: t('描述场景、镜头运动、时长和参考素材。', 'Describe scene, camera motion, duration and references.') })
   } else if (type === 'moodboard') {
-    canvasStore.addObject({ type: 'moodboard', x, y, width: 420, height: 280, title: t('分镜', 'Storyboard'), content: t('镜头 01-06 和视觉方向。', 'Shots 01-06 and visual direction.') })
+    canvasStore.addObject({ type: 'moodboard', x, y, width: 420, height: 280, title: t('分镜脚本', 'Storyboard'), content: t('镜头 01-06 与视觉方向。', 'Shots 01-06 and visual direction.') })
   } else {
-    canvasStore.addObject({ type: 'prompt', x, y, width: 360, height: 220, title: t('Prompt 节点', 'Prompt waypoint'), content: t('新的创意资产，可继续细化。', 'New creative asset ready for refinement.') })
+    canvasStore.addObject({ type: 'prompt', x, y, width: 360, height: 220, title: t('Prompt 提示词节点', 'Prompt Node'), content: t('新的创作目标，可继续润色为图像或视频提示词。', 'New creative goal ready for image or video prompt refinement.') })
   }
   contextMenu.visible = false
 }
@@ -312,7 +312,7 @@ function createStarterRoute(kind: 'video' | 'poster' | 'storyboard') {
     return
   }
   const prompt = canvasStore.addObject({ type: 'prompt', x: baseX, y: baseY, width: 360, height: 220, title: t('故事目标', 'Story Goal'), content: t('定义角色、冲突、转场和镜头节奏。', 'Define character, conflict, transition and shot rhythm.') })
-  const board = canvasStore.addObject({ type: 'moodboard', x: baseX + 430, y: baseY + 80, width: 380, height: 260, title: t('分镜', 'Storyboard'), content: t('拆分为镜头 01-06。', 'Break into shots 01-06.') })
+  const board = canvasStore.addObject({ type: 'moodboard', x: baseX + 430, y: baseY + 80, width: 380, height: 260, title: t('分镜脚本', 'Storyboard'), content: t('拆分为镜头 01-06。', 'Break into shots 01-06.') })
   canvasStore.addLink(prompt.id, board.id, 'storyboard')
 }
 
@@ -379,3 +379,18 @@ function handleBeforeUnload() {
   }
 }
 </script>
+
+<style scoped>
+.star-route {
+  stroke: rgba(143, 234, 255, 0.58);
+  stroke-dasharray: 10 12;
+  filter: drop-shadow(0 0 8px rgba(78, 201, 255, 0.2));
+  animation: route-flow 18s linear infinite;
+}
+
+@keyframes route-flow {
+  to {
+    stroke-dashoffset: -220;
+  }
+}
+</style>
