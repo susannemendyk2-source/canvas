@@ -8,16 +8,20 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #03050b;
-  --bg-secondary: #050608;
-  --bg-card: rgba(255, 255, 255, 0.04);
-  --bg-elevated: #111722;
+  --bg-primary: #030814;
+  --bg-secondary: #07111f;
+  --bg-card: rgba(7, 17, 31, 0.72);
+  --bg-elevated: #0b1728;
   --text-primary: rgba(255, 255, 255, 0.92);
-  --text-secondary: rgba(255, 255, 255, 0.55);
-  --text-tertiary: rgba(255, 255, 255, 0.35);
-  --border-color: rgba(255, 255, 255, 0.10);
-  --glass-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.045));
-  --glass-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+  --text-secondary: rgba(232, 238, 245, 0.62);
+  --text-tertiary: rgba(184, 196, 214, 0.42);
+  --border-color: rgba(143, 234, 255, 0.18);
+  --accent-cyan: #8feaff;
+  --accent-blue: #4ec9ff;
+  --accent-silver: #e8eef5;
+  --accent-gold: #c7a76b;
+  --glass-bg: linear-gradient(180deg, rgba(7, 17, 31, 0.82), rgba(3, 8, 20, 0.68));
+  --glass-shadow: 0 22px 80px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   --dotted-opacity: 0.13;
 }
 
@@ -40,9 +44,12 @@
 body {
   min-height: 100vh;
   margin: 0;
-  background: var(--bg-secondary);
+  background:
+    radial-gradient(circle at 50% -20%, rgba(78, 201, 255, 0.16), transparent 34%),
+    radial-gradient(circle at 16% 18%, rgba(143, 234, 255, 0.08), transparent 28%),
+    linear-gradient(180deg, #030814 0%, #07111f 48%, #030814 100%);
   color: var(--text-primary);
-  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Inter", "HarmonyOS Sans", "Alibaba PuHuiTi", "Source Han Sans SC", ui-sans-serif, system-ui, sans-serif;
 }
 
 button, input, textarea, select { font: inherit; }
@@ -56,8 +63,77 @@ button, input, textarea, select { font: inherit; }
 
 .dotted-grid {
   background-image:
-    radial-gradient(circle at center, rgba(255, 255, 255, var(--dotted-opacity)) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(143, 234, 255, var(--dotted-opacity)) 1px, transparent 1px),
+    linear-gradient(rgba(143, 234, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143, 234, 255, 0.035) 1px, transparent 1px),
     radial-gradient(circle at 20% 10%, rgba(102, 228, 255, var(--dotted-opacity)), transparent 30%),
-    radial-gradient(circle at 80% 20%, rgba(157, 123, 255, calc(var(--dotted-opacity) - 0.01)), transparent 34%);
-  background-size: 28px 28px, 100% 100%, 100% 100%;
+    radial-gradient(circle at 80% 20%, rgba(199, 167, 107, 0.05), transparent 34%);
+  background-size: 28px 28px, 72px 72px, 72px 72px, 100% 100%, 100% 100%;
+}
+
+.polaris-shell {
+  background:
+    radial-gradient(circle at 52% 6%, rgba(78, 201, 255, 0.22), transparent 24%),
+    radial-gradient(circle at 82% 22%, rgba(143, 234, 255, 0.08), transparent 28%),
+    radial-gradient(circle at 18% 38%, rgba(199, 167, 107, 0.06), transparent 26%),
+    linear-gradient(180deg, #030814 0%, #07111f 46%, #030814 100%);
+}
+
+.starfield {
+  background-image:
+    radial-gradient(circle, rgba(223, 249, 255, 0.72) 0 1px, transparent 1.4px),
+    radial-gradient(circle, rgba(143, 234, 255, 0.28) 0 1px, transparent 1.2px);
+  background-position: 0 0, 18px 22px;
+  background-size: 86px 86px, 132px 132px;
+  animation: star-drift 28s linear infinite;
+}
+
+.orbit-sphere {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 45% 38%, rgba(223, 249, 255, 0.95), rgba(143, 234, 255, 0.18) 16%, transparent 17%),
+    radial-gradient(circle at 50% 50%, rgba(78, 201, 255, 0.2), transparent 52%);
+  box-shadow: 0 0 90px rgba(78, 201, 255, 0.2);
+}
+
+.orbit-sphere::before,
+.orbit-sphere::after {
+  content: "";
+  position: absolute;
+  inset: 13%;
+  border: 1px solid rgba(143, 234, 255, 0.32);
+  border-radius: 999px;
+  transform: rotateX(64deg) rotateZ(-22deg);
+  animation: orbit-turn 18s linear infinite;
+}
+
+.orbit-sphere::after {
+  inset: 24%;
+  border-color: rgba(199, 167, 107, 0.28);
+  animation-duration: 26s;
+  animation-direction: reverse;
+}
+
+.polaris-card {
+  border: 1px solid rgba(143, 234, 255, 0.14);
+  background: linear-gradient(180deg, rgba(7, 17, 31, 0.76), rgba(3, 8, 20, 0.62));
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+}
+
+.polaris-card:hover {
+  border-color: rgba(143, 234, 255, 0.36);
+  box-shadow: 0 24px 80px rgba(78, 201, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+@keyframes star-drift {
+  from { background-position: 0 0, 18px 22px; }
+  to { background-position: 86px 86px, 150px 154px; }
+}
+
+@keyframes orbit-turn {
+  from { transform: rotateX(64deg) rotateZ(-22deg) rotate(0deg); }
+  to { transform: rotateX(64deg) rotateZ(-22deg) rotate(360deg); }
 }
